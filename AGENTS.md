@@ -83,3 +83,4 @@ Run the test suite before reporting a step done — don't call something finishe
 
 ## Commits
 Conventional commits (`feat:`, `fix:`, `test:`, `docs:`, `chore:`), small and scoped per module.
+

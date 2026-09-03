@@ -18,3 +18,4 @@ export enum OrgStatus {
   ACTIVE = 'ACTIVE',
   SUSPENDED = 'SUSPENDED',
 }
+

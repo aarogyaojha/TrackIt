@@ -8,3 +8,4 @@ export default tseslint.config(
     ignores: ["dist/**", "node_modules/**"],
   },
 );
+

@@ -14,6 +14,7 @@ dist/
 build/
 .next/
 out/
+*.tsbuildinfo
 
 # Turborepo
 .turbo/
@@ -34,3 +35,4 @@ lerna-debug.log*
 .vscode/
 *.swp
 *.swo
+
