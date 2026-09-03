@@ -57,7 +57,11 @@ All env var access goes through `src/config/configuration.ts` + `AppConfigServic
 - No real payment gateway yet — plan changes are superadmin-actioned for now; leave a clean seam to slot one in later.
 
 ## Swagger
-- Served at `/api/docs`. Every DTO decorated with `@ApiProperty`. Every controller method has `@ApiOperation` + `@ApiResponse`. Bearer auth scheme registered for protected routes.
+- Served at `/api/docs`. Every DTO decorated with `@ApiProperty`. Every controller method has `@ApiOperation`.
+- For success responses, use NestJS's shorthand decorators (`@ApiOkResponse`, `@ApiCreatedResponse`, etc.) instead of the generic `@ApiResponse({ status: ... })`.
+- For error responses shared across multiple endpoints, use `ApiStandardErrors(...codes)` from `common/decorators/api-standard-errors.decorator.ts` — it wraps NestJS's built-in error shorthands with wording pulled from `error-messages.ts`, so the text only lives in one place. Pass only the codes that endpoint can actually return.
+- A response unique to one endpoint (a one-off status code, a summary that nothing else shares) stays inline as a plain decorator. Don't create a constants entry or a shared decorator for something used exactly once — see the endpoint checklist for what does and doesn't get centralized.
+- Bearer auth scheme registered for protected routes.
 
 ## New Endpoint Checklist
 1. DTO with class-validator decorators + `@ApiProperty`

@@ -8,3 +8,5 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
   [ErrorCode.CONFLICT]: 'Resource conflict detected',
   [ErrorCode.INTERNAL_ERROR]: 'An unexpected internal error occurred',
 };
+
+export const ERROR_MESSAGES = ErrorMessages;
