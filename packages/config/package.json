@@ -1,0 +1,15 @@
+{
+  "name": "@trackit/config",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./eslint/index.js",
+  "exports": {
+    "./eslint": "./eslint/index.js",
+    "./eslint/*": "./eslint/*",
+    "./typescript/*": "./typescript/*"
+  },
+  "files": [
+    "eslint",
+    "typescript"
+  ]
+}
