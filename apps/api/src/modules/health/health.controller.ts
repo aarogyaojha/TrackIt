@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckResult,
@@ -18,7 +18,11 @@ export class HealthController {
   @Get()
   @HealthCheck()
   @ApiOperation({ summary: 'Health check endpoint' })
-  @ApiResponse({ status: 200, description: 'Health check passed' })
+  @ApiOkResponse({ description: 'Health check passed' })
+  @ApiResponse({
+    status: 503,
+    description: 'One or more health indicators are down',
+  })
   check(): Promise<HealthCheckResult> {
     return this.health.check([
       () => this.mongooseHealth.pingCheck('database'),
