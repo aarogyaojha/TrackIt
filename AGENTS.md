@@ -69,7 +69,7 @@ All env var access goes through `src/config/configuration.ts` + `AppConfigServic
 3. Service method — business logic, org-scoping, authorization
 4. Controller handler — thin, delegates to service
 5. Guards/decorators applied (`@Roles`, `@CurrentOrg`, etc.)
-6. Swagger annotations
+6. Swagger annotations (summary/description/tag text as named constants — module-local `<module>.constants.ts` or root `constants/` if shared, never a bare string)
 7. Unit test (service, mocked repository) + e2e test
 
 Run the test suite before reporting a step done — don't call something finished because it compiles.

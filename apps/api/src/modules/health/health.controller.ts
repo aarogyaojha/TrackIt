@@ -6,8 +6,14 @@ import {
   HealthCheckService,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
+import {
+  HEALTH_CHECK_ERROR_DESCRIPTION,
+  HEALTH_CHECK_OK_DESCRIPTION,
+  HEALTH_CHECK_SUMMARY,
+  HEALTH_TAG,
+} from './health.constants';
 
-@ApiTags('Health')
+@ApiTags(HEALTH_TAG)
 @Controller('health')
 export class HealthController {
   constructor(
@@ -17,11 +23,11 @@ export class HealthController {
 
   @Get()
   @HealthCheck()
-  @ApiOperation({ summary: 'Health check endpoint' })
-  @ApiOkResponse({ description: 'Health check passed' })
+  @ApiOperation({ summary: HEALTH_CHECK_SUMMARY })
+  @ApiOkResponse({ description: HEALTH_CHECK_OK_DESCRIPTION })
   @ApiResponse({
     status: 503,
-    description: 'One or more health indicators are down',
+    description: HEALTH_CHECK_ERROR_DESCRIPTION,
   })
   check(): Promise<HealthCheckResult> {
     return this.health.check([
