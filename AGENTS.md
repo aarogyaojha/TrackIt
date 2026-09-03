@@ -40,7 +40,8 @@ packages/config  shared eslint + tsconfig
 - A global response interceptor wraps every successful response in the envelope — controllers just return the raw payload.
 
 ## Constants
-Centralized in `apps/api/src/constants/` (barrel export from `index.ts`): `error-codes.ts`, `error-messages.ts`, `roles.ts`, `plan-tiers.ts`, `swagger.constants.ts`. No magic strings for error codes/roles/plan names anywhere else. Shared enums both apps need (`TicketStatus`, `PlanTier`, `OrgStatus`) live in `packages/types` instead.
+Backend-only values centralized in `apps/api/src/constants/` (barrel export from `index.ts`): `error-codes.ts`, `error-messages.ts`, `swagger.constants.ts`. No magic strings for error codes anywhere else.
+Cross-app enums that both frontend and backend need — `Role`, `OrgStatus`, `PlanTier`, and later `TicketStatus` — live in `packages/types` instead. Never redefine one of these locally in either app; both import the same source of truth from `@trackit/types`.
 
 ## Configuration
 All env var access goes through `src/config/configuration.ts` + `AppConfigService` — never call `process.env.X` anywhere else in the app. Adding a new env var means updating three places together: `env.validation.ts`, `configuration.ts`, and `AppConfigService`. Local MongoDB runs via `docker compose up -d` (see docker-compose.yml) — don't assume a locally-installed Mongo.
