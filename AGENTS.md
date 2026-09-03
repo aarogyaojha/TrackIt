@@ -42,6 +42,9 @@ packages/config  shared eslint + tsconfig
 ## Constants
 Centralized in `apps/api/src/constants/` (barrel export from `index.ts`): `error-codes.ts`, `error-messages.ts`, `roles.ts`, `plan-tiers.ts`, `swagger.constants.ts`. No magic strings for error codes/roles/plan names anywhere else. Shared enums both apps need (`TicketStatus`, `PlanTier`, `OrgStatus`) live in `packages/types` instead.
 
+## Configuration
+All env var access goes through `src/config/configuration.ts` + `AppConfigService` — never call `process.env.X` anywhere else in the app. Adding a new env var means updating three places together: `env.validation.ts`, `configuration.ts`, and `AppConfigService`. Local MongoDB runs via `docker compose up -d` (see docker-compose.yml) — don't assume a locally-installed Mongo.
+
 ## Organization Lifecycle
 - Self-registration creates an `Organization` (`status: PENDING`) + its first `ORG_ADMIN` user in one transaction.
 - A global setting (superadmin-controlled, stored in a `PlatformSettings` doc) toggles `requireOrgApproval`. When true, `PENDING` orgs can't log in past a "pending approval" screen until a superadmin approves. When false, orgs go straight to `ACTIVE`.
