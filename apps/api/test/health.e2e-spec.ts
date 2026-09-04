@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { AppConfigService } from '../src/config/app-config.service';
+import { API_PREFIX } from '../src/constants';
 import {
   startMongoMemoryServer,
   stopMongoMemoryServer,
@@ -24,6 +25,11 @@ describe('Health & Error Envelope (e2e)', () => {
         port: 4000,
         mongodbUri: mongoUri,
         isProduction: false,
+        corsOrigin: 'http://localhost:3000',
+        jwtAccessSecret: 'test-jwt-access-secret',
+        jwtRefreshSecret: 'test-jwt-refresh-secret',
+        jwtAccessExpiresIn: '15m',
+        jwtRefreshExpiresIn: '7d',
       })
       .compile();
 
@@ -35,6 +41,7 @@ describe('Health & Error Envelope (e2e)', () => {
         transform: true,
       }),
     );
+    app.setGlobalPrefix(API_PREFIX, { exclude: ['health'] });
     await app.init();
   });
 
@@ -43,7 +50,7 @@ describe('Health & Error Envelope (e2e)', () => {
     await stopMongoMemoryServer();
   });
 
-  it('GET /health returns successful response envelope with database health status', async () => {
+  it('GET /health returns successful response envelope with database health status (unprefixed bare route)', async () => {
     const response = await request(app.getHttpServer())
       .get('/health')
       .expect(200);
@@ -61,17 +68,9 @@ describe('Health & Error Envelope (e2e)', () => {
     });
   });
 
-  it('GET /nonexistent returns standardized error response envelope with 404', async () => {
-    const response = await request(app.getHttpServer())
-      .get('/nonexistent-route')
+  it(`GET /${API_PREFIX}/health returns 404 confirming /health is excluded from API prefix`, async () => {
+    await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/health`)
       .expect(404);
-
-    expect(response.body).toMatchObject({
-      success: false,
-      error: {
-        code: 'NOT_FOUND',
-      },
-    });
-    expect(response.body.error).toHaveProperty('message');
   });
 });

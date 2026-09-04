@@ -1,12 +1,22 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { AppConfigService } from './config/app-config.service';
 import { setupSwagger } from './config/swagger.config';
-import { SWAGGER_DEFAULTS } from './constants';
+import { API_PREFIX, SWAGGER_DEFAULTS } from './constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const appConfigService = app.get(AppConfigService);
+
+  app.use(cookieParser());
+
+  app.enableCors({
+    origin: appConfigService.corsOrigin,
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,9 +26,10 @@ async function bootstrap() {
     }),
   );
 
+  app.setGlobalPrefix(API_PREFIX, { exclude: ['health'] });
+
   setupSwagger(app);
 
-  const appConfigService = app.get(AppConfigService);
   const port = appConfigService.port;
 
   await app.listen(port);
