@@ -6,6 +6,7 @@ import {
   HealthCheckService,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
+import { Public } from '../auth/decorators/public.decorator';
 import {
   HEALTH_CHECK_ERROR_DESCRIPTION,
   HEALTH_CHECK_OK_DESCRIPTION,
@@ -13,6 +14,7 @@ import {
   HEALTH_TAG,
 } from './health.constants';
 
+@Public()
 @ApiTags(HEALTH_TAG)
 @Controller('health')
 export class HealthController {
