@@ -6,6 +6,7 @@ import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
+import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { UsersService } from '../users/user.service';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
 import { MAX_SLUG_RETRIES } from './organization.constants';
@@ -18,6 +19,7 @@ export class OrganizationsService {
     private readonly organizationsRepository: OrganizationsRepository,
     private readonly usersService: UsersService,
     private readonly platformSettingsService: PlatformSettingsService,
+    private readonly subscriptionsService: SubscriptionsService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -70,8 +72,14 @@ export class OrganizationsService {
             session,
           );
 
+          await this.subscriptionsService.createDefaultSubscription(
+            org._id,
+            session,
+          );
+
           await session.commitTransaction();
           return { organization: org, user };
+
         } catch (err: unknown) {
           await session.abortTransaction();
 

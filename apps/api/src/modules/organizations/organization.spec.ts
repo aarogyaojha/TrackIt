@@ -6,6 +6,7 @@ import { OrgStatus, Role } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode } from '../../constants';
 import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
+import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { UsersService } from '../users/user.service';
 import { OrganizationsRepository } from './organization.repository';
 import { OrganizationDocument } from './organization.schema';
@@ -16,6 +17,7 @@ describe('OrganizationsService', () => {
   let organizationsRepository: jest.Mocked<OrganizationsRepository>;
   let usersService: jest.Mocked<UsersService>;
   let platformSettingsService: jest.Mocked<PlatformSettingsService>;
+  let subscriptionsService: jest.Mocked<SubscriptionsService>;
 
   const mockSession = {
     startTransaction: jest.fn(),
@@ -44,6 +46,10 @@ describe('OrganizationsService', () => {
     getSettings: jest.fn(),
   };
 
+  const mockSubscriptionsService = {
+    createDefaultSubscription: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -63,6 +69,10 @@ describe('OrganizationsService', () => {
           useValue: mockPlatformSettingsService,
         },
         {
+          provide: SubscriptionsService,
+          useValue: mockSubscriptionsService,
+        },
+        {
           provide: getConnectionToken(),
           useValue: mockConnection,
         },
@@ -73,7 +83,9 @@ describe('OrganizationsService', () => {
     organizationsRepository = module.get(OrganizationsRepository);
     usersService = module.get(UsersService);
     platformSettingsService = module.get(PlatformSettingsService);
+    subscriptionsService = module.get(SubscriptionsService);
   });
+
 
   describe('registerOrganization', () => {
     const dto = {
@@ -131,10 +143,14 @@ describe('OrganizationsService', () => {
         },
         mockSession,
       );
+      expect(
+        subscriptionsService.createDefaultSubscription,
+      ).toHaveBeenCalledWith(orgId, mockSession);
       expect(mockSession.commitTransaction).toHaveBeenCalled();
       expect(mockSession.endSession).toHaveBeenCalled();
       expect(result).toEqual({ organization: mockOrg, user: mockUser });
     });
+
 
     it('should throw EMAIL_ALREADY_EXISTS when user creation fails with duplicate email', async () => {
       platformSettingsService.getSettings.mockResolvedValue({

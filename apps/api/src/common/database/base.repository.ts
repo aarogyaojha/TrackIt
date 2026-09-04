@@ -124,6 +124,26 @@ export abstract class BaseRepository<T> {
   }
 
   /**
+   * Update multiple documents matching the filter query.
+   * @param filter Filter criteria for matching documents
+   * @param update Update operations to apply
+   * @param options Optional query/update options
+   * @returns Object with matchedCount and modifiedCount
+   */
+  async updateMany(
+    filter: QueryFilter<T> = {},
+    update: UpdateQuery<T>,
+    options?: Parameters<Model<T>['updateMany']>[2],
+  ): Promise<{ matchedCount: number; modifiedCount: number }> {
+    const result = await this.model.updateMany(filter, update, options).exec();
+    return {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
+  }
+
+
+  /**
    * Delete a document by its MongoDB _id.
    * @param id The document ID
    * @param options Optional query options
@@ -136,3 +156,4 @@ export abstract class BaseRepository<T> {
     return this.model.findByIdAndDelete(id, options).exec();
   }
 }
+

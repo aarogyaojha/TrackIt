@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, QueryOptions } from 'mongoose';
+import { Model, QueryOptions, Types } from 'mongoose';
 import { BaseRepository } from '../../common/database/base.repository';
+
 import { User, UserDocument } from './user.schema';
 
 @Injectable()
@@ -33,4 +34,11 @@ export class UsersRepository extends BaseRepository<UserDocument> {
   ): Promise<UserDocument | null> {
     return this.updateById(id, { $set: { refreshTokenHash } });
   }
+
+  async countByOrganizationId(
+    organizationId: string | Types.ObjectId,
+  ): Promise<number> {
+    return this.model.countDocuments({ organizationId }).exec();
+  }
 }
+

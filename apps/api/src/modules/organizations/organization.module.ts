@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PlatformSettingsModule } from '../platform-settings/platform-settings.module';
+import { SubscriptionsModule } from '../subscriptions/subscription.module';
 import { UsersModule } from '../users/user.module';
 import { OrganizationsController } from './organization.controller';
 import { OrganizationsRepository } from './organization.repository';
@@ -17,6 +18,7 @@ import { OrganizationsService } from './organization.service';
     ]),
     UsersModule,
     PlatformSettingsModule,
+    SubscriptionsModule,
   ],
   controllers: [OrganizationsController],
   providers: [OrganizationsRepository, OrganizationsService],
