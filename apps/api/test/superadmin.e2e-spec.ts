@@ -211,6 +211,62 @@ describe('Superadmin & Platform Management (e2e)', () => {
     });
   });
 
+  it(`POST /${API_PREFIX}/organizations/:id/reject — superadmin rejects a pending organization to REJECTED status`, async () => {
+    // Register a separate org to reject
+    const regRes = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/register`)
+      .send({
+        orgName: 'RejectMe Auto',
+        adminName: 'Reject Admin',
+        adminEmail: 'reject@rejectme.com',
+        adminPassword: 'Password123!',
+      })
+      .expect(201);
+
+    const rejectOrgId = regRes.body.data.organization.id;
+
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/${rejectOrgId}/reject`)
+      .set('Authorization', `Bearer ${superadminAccessToken}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toMatchObject({
+      id: rejectOrgId,
+      status: OrgStatus.REJECTED,
+    });
+
+    // Re-rejecting should fail with 409 INVALID_STATUS_TRANSITION
+    const reRejectRes = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/${rejectOrgId}/reject`)
+      .set('Authorization', `Bearer ${superadminAccessToken}`)
+      .expect(409);
+
+    expect(reRejectRes.body).toMatchObject({
+      success: false,
+      error: {
+        code: 'INVALID_STATUS_TRANSITION',
+      },
+    });
+
+    // Admin cannot log in to a REJECTED organization
+    const loginRes = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/auth/login`)
+      .send({
+        email: 'reject@rejectme.com',
+        password: 'Password123!',
+      })
+      .expect(403);
+
+    expect(loginRes.body).toMatchObject({
+      success: false,
+      error: {
+        code: 'ORG_NOT_APPROVED',
+      },
+    });
+  });
+
+
   it(`POST /${API_PREFIX}/auth/login — org admin can now log in after superadmin approval`, async () => {
     const res = await request(app.getHttpServer())
       .post(`/${API_PREFIX}/auth/login`)
