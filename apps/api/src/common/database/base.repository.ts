@@ -14,6 +14,7 @@ import {
   ProjectionType,
   QueryFilter,
   QueryOptions,
+  SaveOptions,
   UpdateQuery,
 } from 'mongoose';
 
@@ -23,11 +24,12 @@ export abstract class BaseRepository<T> {
   /**
    * Create a new document in the collection.
    * @param doc Data to create document with
+   * @param options Optional save options (e.g. session)
    * @returns The created document
    */
-  async create(doc: Partial<T>): Promise<T> {
+  async create(doc: Partial<T>, options?: SaveOptions): Promise<T> {
     const created = new this.model(doc);
-    return (await created.save()) as unknown as T;
+    return (await created.save(options)) as unknown as T;
   }
 
   /**
@@ -76,6 +78,37 @@ export abstract class BaseRepository<T> {
   }
 
   /**
+   * Find paginated documents matching the filter query.
+   * This is the standard way any feature module lists a paginated collection.
+   *
+   * @param filter Filter criteria for matching documents
+   * @param pagination Page (1-indexed) and limit options
+   * @param sort Optional sorting criteria
+   * @returns Object containing matching items and total count of matched documents
+   */
+  async findPaginated(
+    filter: QueryFilter<T> = {},
+    pagination: { page: number; limit: number },
+    sort?: Record<string, 1 | -1 | 'asc' | 'desc'>,
+  ): Promise<{ items: T[]; total: number }> {
+    const page = Math.max(1, pagination.page || 1);
+    const limit = Math.max(1, pagination.limit || 20);
+    const skip = (page - 1) * limit;
+
+    const [items, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .sort(sort as Parameters<ReturnType<Model<T>['find']>['sort']>[0])
+        .skip(skip)
+        .limit(limit)
+        .exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return { items, total };
+  }
+
+  /**
    * Update a document by its MongoDB _id.
    * @param id The document ID
    * @param update Update operations to apply
@@ -85,7 +118,7 @@ export abstract class BaseRepository<T> {
   async updateById(
     id: string,
     update: UpdateQuery<T>,
-    options: QueryOptions<T> = { new: true },
+    options: QueryOptions<T> = { returnDocument: 'after' },
   ): Promise<T | null> {
     return this.model.findByIdAndUpdate(id, update, options).exec();
   }
