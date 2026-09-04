@@ -6,6 +6,7 @@ import {
   HealthCheckService,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from '../auth/decorators/public.decorator';
 import {
   HEALTH_CHECK_ERROR_DESCRIPTION,
@@ -15,6 +16,7 @@ import {
 } from './health.constants';
 
 @Public()
+@SkipThrottle({ default: true, auth: true })
 @ApiTags(HEALTH_TAG)
 @Controller('health')
 export class HealthController {

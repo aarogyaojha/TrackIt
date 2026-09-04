@@ -13,8 +13,13 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
+import {
+  AUTH_THROTTLE_LIMIT,
+  AUTH_THROTTLE_TTL_MS,
+} from '../../common/throttle/throttle.constants';
 import { AppConfigService } from '../../config/app-config.service';
 import { ErrorCode } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
@@ -48,6 +53,12 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({
+    auth: {
+      limit: AUTH_THROTTLE_LIMIT,
+      ttl: AUTH_THROTTLE_TTL_MS,
+    },
+  })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -78,6 +89,12 @@ export class AuthController {
   }
 
   @Public()
+  @Throttle({
+    auth: {
+      limit: AUTH_THROTTLE_LIMIT,
+      ttl: AUTH_THROTTLE_TTL_MS,
+    },
+  })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({

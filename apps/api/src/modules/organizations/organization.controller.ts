@@ -16,9 +16,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
+import {
+  AUTH_THROTTLE_LIMIT,
+  AUTH_THROTTLE_TTL_MS,
+} from '../../common/throttle/throttle.constants';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { CurrentOrg } from '../auth/decorators/current-org.decorator';
@@ -37,6 +42,12 @@ export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Public()
+  @Throttle({
+    auth: {
+      limit: AUTH_THROTTLE_LIMIT,
+      ttl: AUTH_THROTTLE_TTL_MS,
+    },
+  })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
@@ -53,6 +64,7 @@ export class OrganizationsController {
       organization: toOrganizationResponse(result.organization),
     };
   }
+
 
   @Get('me')
   @UseGuards(TenantGuard)

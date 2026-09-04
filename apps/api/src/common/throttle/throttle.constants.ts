@@ -1,0 +1,4 @@
+export const DEFAULT_THROTTLE_TTL_MS = 60000;
+export const DEFAULT_THROTTLE_LIMIT = 100;
+export const AUTH_THROTTLE_TTL_MS = 60000;
+export const AUTH_THROTTLE_LIMIT = 20;

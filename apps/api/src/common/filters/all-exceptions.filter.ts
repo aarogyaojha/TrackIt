@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ThrottlerException } from '@nestjs/throttler';
 import { Response } from 'express';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { AppException } from '../exceptions/app.exception';
@@ -23,7 +24,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     let message: string = ErrorMessages[ErrorCode.INTERNAL_ERROR];
     let details: unknown = undefined;
 
-    if (exception instanceof AppException) {
+    if (exception instanceof ThrottlerException) {
+      status = HttpStatus.TOO_MANY_REQUESTS;
+      code = ErrorCode.RATE_LIMITED;
+      message = ErrorMessages[ErrorCode.RATE_LIMITED];
+    } else if (exception instanceof AppException) {
       status = exception.getStatus();
       code = exception.code;
       message = exception.message;
@@ -93,6 +98,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return ErrorCode.NOT_FOUND;
       case HttpStatus.CONFLICT:
         return ErrorCode.CONFLICT;
+      case HttpStatus.TOO_MANY_REQUESTS:
+        return ErrorCode.RATE_LIMITED;
       default:
         return ErrorCode.INTERNAL_ERROR;
     }
