@@ -89,10 +89,21 @@ List endpoints use PaginationQueryDto (page/limit) and BaseRepository.findPagina
 
 ## Subscription / Plans
 
-- `Plan` defines tier (`FREE` / `BASIC` / `PRO`) and limits (max active tickets, max staff users, tickets/month).
-- `Subscription` doc per org: current plan + usage counters. Usage checked in the relevant service (e.g. `TicketsService.create`) before writing — throw `PLAN_LIMIT_EXCEEDED` if over.
-- Monthly usage counters reset via a `@nestjs/schedule` cron job.
+- `Plan` is DB-backed (get-or-create pattern like `PlatformSettings`), defines tier (`FREE` / `BASIC` / `PRO`) and limits (`maxActiveTickets`, `maxStaffUsers`, `maxTicketsPerMonth`). Default limits are defined in `plan.constants.ts`.
+- `Subscription` doc per org: links `organizationId` to `planTier` + usage counters (`ticketsThisMonth`, `currentPeriodStart`).
+- `assertPlanLimit()` helper exists in `SubscriptionsService` and is tested, ready for Phase 6 ticket creation and future staff-invite features. Throws `PLAN_LIMIT_EXCEEDED` (409) when at/over limits.
+- Monthly usage counters reset on the 1st of each calendar month via `@nestjs/schedule` cron calling a directly-testable `resetMonthlyUsageCounters()` method.
+- Plan tier changes are instant and superadmin-only with no proration.
 - No real payment gateway yet — plan changes are superadmin-actioned for now; leave a clean seam to slot one in later.
+
+## Rate Limiting
+
+- Two-tier throttling (`default` / `auth`) implemented via `@nestjs/throttler` and registered as global `APP_GUARD`.
+- Limits are defined as named constants in `common/throttle/throttle.constants.ts` (not env-configurable — deliberate MVP choice, revisit with real traffic data).
+- `/health` is explicitly exempt from throttling via `@SkipThrottle()`.
+- Auth-critical routes (`POST /auth/login`, `POST /auth/refresh`, `POST /organizations/register`) use the stricter `auth` tier (`@Throttle({ auth: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS } })`). Each endpoint using the 'auth' tier gets its own independent 20-req/min counter per IP — the limit is not a combined pool across login/refresh/register.
+- 429 errors are formatted through the standard response envelope as `RATE_LIMITED` via `AllExceptionsFilter`, preserving any rate-limiting / retry headers set by the library.
+- The default in-memory storage does NOT work correctly across multiple API instances — revisit with a shared store (e.g. Redis) before any horizontal scaling.
 
 ## Swagger
 
