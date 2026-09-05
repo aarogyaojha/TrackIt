@@ -54,6 +54,7 @@ describe('SubscriptionsService', () => {
       create: jest.fn(),
       findByOrganizationId: jest.fn(),
       updateById: jest.fn(),
+      updateOne: jest.fn(),
       updateMany: jest.fn(),
     };
 
@@ -239,6 +240,36 @@ describe('SubscriptionsService', () => {
             currentPeriodStart: expect.any(Date),
           },
         },
+      );
+    });
+  });
+
+  describe('incrementTicketsThisMonth', () => {
+    it('calls updateOne with $inc ticketsThisMonth by 1 for string orgId', async () => {
+      subscriptionsRepository.updateOne.mockResolvedValue({
+        matchedCount: 1,
+        modifiedCount: 1,
+      });
+
+      await service.incrementTicketsThisMonth(mockOrgId.toString());
+
+      expect(subscriptionsRepository.updateOne).toHaveBeenCalledWith(
+        { organizationId: mockOrgId },
+        { $inc: { ticketsThisMonth: 1 } },
+      );
+    });
+
+    it('calls updateOne with $inc ticketsThisMonth by 1 for ObjectId orgId', async () => {
+      subscriptionsRepository.updateOne.mockResolvedValue({
+        matchedCount: 1,
+        modifiedCount: 1,
+      });
+
+      await service.incrementTicketsThisMonth(mockOrgId);
+
+      expect(subscriptionsRepository.updateOne).toHaveBeenCalledWith(
+        { organizationId: mockOrgId },
+        { $inc: { ticketsThisMonth: 1 } },
       );
     });
   });

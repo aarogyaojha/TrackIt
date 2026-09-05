@@ -108,6 +108,20 @@ export class SubscriptionsService {
     }
   }
 
+  async incrementTicketsThisMonth(
+    organizationId: string | Types.ObjectId,
+  ): Promise<void> {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+
+    await this.subscriptionsRepository.updateOne(
+      { organizationId: orgObjectId },
+      { $inc: { ticketsThisMonth: 1 } },
+    );
+  }
+
   async resetMonthlyUsageCounters(): Promise<{
     matchedCount: number;
     modifiedCount: number;
@@ -123,3 +137,4 @@ export class SubscriptionsService {
     );
   }
 }
+
