@@ -9,6 +9,7 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
   [ErrorCode.INTERNAL_ERROR]: 'An unexpected internal error occurred',
   [ErrorCode.EMAIL_ALREADY_EXISTS]: 'A user with this email address already exists',
   [ErrorCode.ORG_SLUG_TAKEN]: 'Organization identifier slug is already taken',
+  [ErrorCode.TICKET_CODE_TAKEN]: 'A ticket with this code already exists for the organization',
   [ErrorCode.INVALID_CREDENTIALS]: 'Invalid email or password',
   [ErrorCode.ORG_NOT_APPROVED]: 'Organization is pending approval or inactive',
   [ErrorCode.INVALID_REFRESH_TOKEN]: 'Invalid or expired refresh token',

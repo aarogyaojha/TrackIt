@@ -11,6 +11,8 @@ import {
   AUTH_THROTTLE_TTL_MS,
   DEFAULT_THROTTLE_LIMIT,
   DEFAULT_THROTTLE_TTL_MS,
+  PUBLIC_THROTTLE_LIMIT,
+  PUBLIC_THROTTLE_TTL_MS,
 } from './common/throttle/throttle.constants';
 import { AppConfigModule } from './config/app-config.module';
 import { DatabaseModule } from './database/database.module';
@@ -22,6 +24,7 @@ import { OrganizationsModule } from './modules/organizations/organization.module
 import { PlansModule } from './modules/plans/plan.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscription.module';
+import { TicketsModule } from './modules/tickets/ticket.module';
 import { UsersModule } from './modules/users/user.module';
 
 @Module({
@@ -37,6 +40,11 @@ import { UsersModule } from './modules/users/user.module';
         ttl: AUTH_THROTTLE_TTL_MS,
         limit: AUTH_THROTTLE_LIMIT,
       },
+      {
+        name: 'public',
+        ttl: PUBLIC_THROTTLE_TTL_MS,
+        limit: PUBLIC_THROTTLE_LIMIT,
+      },
     ]),
     ScheduleModule.forRoot(),
     AppConfigModule,
@@ -46,6 +54,7 @@ import { UsersModule } from './modules/users/user.module';
     PlansModule,
     SubscriptionsModule,
     OrganizationsModule,
+    TicketsModule,
     AuthModule,
     HealthModule,
   ],
