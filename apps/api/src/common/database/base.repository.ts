@@ -124,6 +124,25 @@ export abstract class BaseRepository<T> {
   }
 
   /**
+   * Update a single document matching the filter query.
+   * @param filter Filter criteria for matching document
+   * @param update Update operations to apply
+   * @param options Optional query/update options
+   * @returns Object with matchedCount and modifiedCount
+   */
+  async updateOne(
+    filter: QueryFilter<T> = {},
+    update: UpdateQuery<T>,
+    options?: Parameters<Model<T>['updateOne']>[2],
+  ): Promise<{ matchedCount: number; modifiedCount: number }> {
+    const result = await this.model.updateOne(filter, update, options).exec();
+    return {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
+  }
+
+  /**
    * Update multiple documents matching the filter query.
    * @param filter Filter criteria for matching documents
    * @param update Update operations to apply
