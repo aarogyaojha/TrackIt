@@ -36,7 +36,7 @@ packages/config  shared eslint + tsconfig
 
 - `Organization` has a globally-unique `slug` (used in URLs and as the "unique code").
 - Every tenant-owned resource (tickets, staff users) stores `organizationId`. All repository queries for tenant data must filter by it — no exceptions.
-- `Ticket.code` is unique only within an org: compound unique index `{ organizationId, code }`, not globally unique.
+- `Ticket.code` is unique only within an org: compound unique index `{ organizationId, code }`, not globally unique. Normalized to uppercase before persisting (via schema `uppercase: true` and service normalization).
 - Authenticated admin/staff routes resolve the org from the JWT via `TenantGuard` + `@CurrentOrg()` decorator. Never trust an org id from the request body/query for scoping.
 - Public status-page routes resolve the org from the URL slug (`/:orgSlug/t/:code`), no auth — deliberately public, still org-scoped by the slug + compound index lookup.
 - Roles: `SUPERADMIN` (platform, no org), `ORG_ADMIN`, `ORG_STAFF`. `RolesGuard` + `@Roles()` decorator.
@@ -50,7 +50,7 @@ packages/config  shared eslint + tsconfig
 
 ## Response Shaping
 
-Controllers never return a raw Mongoose document. Every entity has a dedicated `<entity>.response.ts` with a `to<Entity>Response()` function that explicitly whitelists fields — this is the single source of truth for what that entity exposes over the API, used by every controller/service that returns it. Schema-level `toJsonTransform` (common/database/schema-options.ts) is a defense-in-depth backstop for accidental leaks, not a substitute for explicit mapping. New modules follow this from the start — add the mapper in the same step as the schema.
+Controllers never return a raw Mongoose document. Every entity has a dedicated `<entity>.response.ts` with a `to<Entity>Response()` function that explicitly whitelists fields — this is the single source of truth for what that entity exposes over the API, used by every controller/service that returns it. Schema-level `toJsonTransform` (common/database/schema-options.ts) is a defense-in-depth backstop for accidental leaks, not a substitute for explicit mapping. New modules follow this from the start — add the mapper in the same step as the schema. Note: Ticket response mappers are the first async mappers in the codebase (`toTicketResponse`) because they generate QR code data URLs asynchronously via `qrcode.toDataURL()`.
 
 ## Constants
 
@@ -98,10 +98,11 @@ List endpoints use PaginationQueryDto (page/limit) and BaseRepository.findPagina
 
 ## Rate Limiting
 
-- Two-tier throttling (`default` / `auth`) implemented via `@nestjs/throttler` and registered as global `APP_GUARD`.
-- Limits are defined as named constants in `common/throttle/throttle.constants.ts` (not env-configurable — deliberate MVP choice, revisit with real traffic data).
+- Three-tier throttling (`default` / `auth` / `public`) implemented via `@nestjs/throttler` and registered as global `APP_GUARD`.
+- Limits are defined as named constants in `common/throttle/throttle.constants.ts` (not env-configurable — deliberate MVP choice, revisit with real traffic data): default (100 req/min), auth (20 req/min), public (30 req/min).
 - `/health` is explicitly exempt from throttling via `@SkipThrottle()`.
 - Auth-critical routes (`POST /auth/login`, `POST /auth/refresh`, `POST /organizations/register`) use the stricter `auth` tier (`@Throttle({ auth: { limit: AUTH_THROTTLE_LIMIT, ttl: AUTH_THROTTLE_TTL_MS } })`). Each endpoint using the 'auth' tier gets its own independent 20-req/min counter per IP — the limit is not a combined pool across login/refresh/register.
+- Public status-page routes (`GET /public/:orgSlug/tickets/:code`) use the `public` tier (`@Throttle({ public: { limit: PUBLIC_THROTTLE_LIMIT, ttl: PUBLIC_THROTTLE_TTL_MS } })`).
 - 429 errors are formatted through the standard response envelope as `RATE_LIMITED` via `AllExceptionsFilter`, preserving any rate-limiting / retry headers set by the library.
 - The default in-memory storage does NOT work correctly across multiple API instances — revisit with a shared store (e.g. Redis) before any horizontal scaling.
 
