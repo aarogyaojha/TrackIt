@@ -20,7 +20,25 @@ packages/config  shared eslint + tsconfig
 
 ## Commands
 
-(fill in once scaffolded: dev, build, lint, test per workspace + root)
+### Root (Turborepo)
+- `npm run dev` — Run all apps concurrently in development mode
+- `npm run build` — Build all workspaces
+- `npm run lint` — Lint all workspaces
+- `npm run test` — Run test suites across workspaces
+
+### Backend (`apps/api`)
+- `npm run start:dev --workspace=api` — Start NestJS dev server with watch mode
+- `npm run build --workspace=api` — Compile NestJS application
+- `npm run lint --workspace=api` — Lint backend codebase
+- `npm run test --workspace=api` — Run backend Jest unit tests
+- `npm run test:e2e --workspace=api` — Run backend e2e tests
+- `npm run seed:superadmin --workspace=api` — Seed superadmin account
+
+### Frontend (`apps/web`)
+- `npm run dev --workspace=web` — Start Next.js development server
+- `npm run build --workspace=web` — Build Next.js production bundle
+- `npm run lint --workspace=web` — Lint frontend codebase
+- `npm run test --workspace=web` — Run frontend tests
 
 ## Backend Architecture — Strict Layering (CSR)
 
@@ -131,11 +149,33 @@ Run the test suite before reporting a step done — don't call something finishe
 ## Frontend Conventions
 
 - Feature-based structure under `apps/web/src/features/<name>/`.
-- TanStack Query for all server state. Reach for Zustand only if a real global client-only state need shows up (auth session) — not by default.
+- TanStack Query for all server state.
+- Redux Toolkit for global client-only state (auth session, etc.) — explicit project decision as of Phase 8, supersedes the earlier Zustand mention.
 - `react-hook-form` + zod resolvers for all forms.
 - shadcn/ui primitives — no hand-rolled buttons/inputs/dialogs once the equivalent primitive exists.
+- Route files (page.tsx/layout.tsx) stay thin — compose feature components and hooks, no inline form JSX or business logic. Feature UI (forms, shells) lives in `features/<name>/components/`; data-fetching hooks in `features/<name>/api/`; reusable cross-page logic (e.g. auth gating) in `features/<name>/hooks/`.
 - Every route with server data has a matching skeleton component and a Next.js `loading.tsx` using it. No blank screens or spinner-only loading states.
 - All user-facing strings and error-code-to-message mappings live in `apps/web/src/constants/`.
+- No bare user-facing string literals in components — every piece of copy is a named constant in that feature's `<feature>.constants.ts` (or root `src/constants/app.constants.ts` if shared), mirroring the backend's Swagger-string convention. Internal route paths use the `ROUTES` map from `app.constants.ts`, never bare path strings.
+
+## Theming
+
+- Dark mode via `next-themes` (`attribute="class"`, default `"system"`).
+- Single source of truth for color is the CSS custom properties in `globals.css` — components use only semantic Tailwind classes (`bg-primary`, `text-foreground`, etc.), never raw hex/rgb/oklch values or arbitrary Tailwind color utilities like `text-blue-600`.
+- Font variable gotcha: `--font-sans` in `@theme inline` must point at `--font-geist-sans`, a self-reference silently falls back to browser defaults — verify computed `font-family` after any font-related change, don't assume the CSS took effect.
+- Spacing rhythm: Standardize on Tailwind's default scale (4, 6, 8, 12, 16) consistently for card padding, form field gaps, and section spacing; avoid arbitrary one-off values.
+- Elevation: Default `Card` carries `shadow-sm` at rest (`hover:shadow-md transition-shadow` for interactive cards); default/primary `Button` variant carries `shadow-sm`.
+- Layout chrome: Marketing/public pages get `<Navbar />` (sticky, with ThemeToggle, login link, register button) and `<Footer />` (minimal single-row copyright); auth pages stay minimal-chrome (small top-left logo link, top-right ThemeToggle, no full nav, no footer) to reduce distraction on conversion-critical flows.
+- Note that ticket-status semantic colors are a deliberately separate, later decision (Phase 9), not covered by this pass.
+
+## Frontend Auth
+
+- Access tokens are stored in-memory only via Redux (`authSlice`), never in localStorage or sessionStorage.
+- Session rehydration occurs via a one-time refresh-on-mount call in `AuthProvider`, rotating the httpOnly refresh cookie into an in-memory access token.
+- Single-flight refresh token deduplication is implemented in the axios response interceptor (`src/lib/api/client.ts`), ensuring concurrent 401s reuse a single in-flight refresh promise rather than triggering redundant token rotations.
+- The axios interceptor accesses the Redux store instance directly (`store.getState().auth.accessToken` and `store.dispatch()`) since interceptors run outside React's render tree.
+- The Next.js middleware (`src/middleware.ts`) checks the presence of a lightweight `has_session` cookie (`Path=/`, `value: '1'`, `httpOnly: true`) as a UX heuristic only, not a security boundary. Because the real `refreshToken` cookie is restricted to `Path=/auth` for defense-in-depth, it is invisible on `/dashboard` or non-auth routes in the browser. The companion `has_session` cookie provides broad path visibility without carrying any sensitive data — presence alone is the signal, and the API's own guards and JWT validations remain the real enforcement for all protected data and operations.
+- Error codes in `apps/web/src/constants/error-codes.ts` deliberately mirror a subset of `apps/api/src/constants/error-codes.ts` without shared package imports to avoid invasive backend refactors.
 
 ## Rules & Constraints
 
