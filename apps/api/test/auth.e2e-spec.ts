@@ -131,14 +131,21 @@ describe('Auth & Organizations Flow (e2e)', () => {
 
     const cookies = loginRes.headers['set-cookie'];
     expect(cookies).toBeDefined();
-    const refreshCookie = Array.isArray(cookies) ? cookies[0] : cookies;
-    expect(refreshCookie).toContain('refreshToken=');
+    const cookiesArr = Array.isArray(cookies) ? cookies : [cookies];
+    const refreshCookie = cookiesArr.find((c: string) => c.includes('refreshToken='));
+    expect(refreshCookie).toBeDefined();
     expect(refreshCookie).toContain('Path=/auth');
-    expect(refreshCookie.toLowerCase()).toContain('httponly');
+    expect(refreshCookie!.toLowerCase()).toContain('httponly');
 
-    const refreshTokenMatch = refreshCookie.match(/refreshToken=([^;]+)/);
+    const refreshTokenMatch = refreshCookie!.match(/refreshToken=([^;]+)/);
     expect(refreshTokenMatch).toBeTruthy();
     rawRefreshToken = refreshTokenMatch![1];
+
+    const hasSessionCookie = cookiesArr.find((c: string) => c.includes('has_session='));
+    expect(hasSessionCookie).toBeDefined();
+    expect(hasSessionCookie).toContain('Path=/');
+    expect(hasSessionCookie).not.toContain('Path=/auth');
+    expect(hasSessionCookie!.toLowerCase()).toContain('httponly');
   });
 
   it(`GET /${API_PREFIX}/organizations/me — returns organization profile when authenticated with valid access token`, async () => {
@@ -181,10 +188,10 @@ describe('Auth & Organizations Flow (e2e)', () => {
 
     const rotatedCookies = refreshRes.headers['set-cookie'];
     expect(rotatedCookies).toBeDefined();
-    const newRefreshCookie = Array.isArray(rotatedCookies)
-      ? rotatedCookies[0]
-      : rotatedCookies;
-    const newRefreshTokenMatch = newRefreshCookie.match(/refreshToken=([^;]+)/);
+    const rotatedCookiesArr = Array.isArray(rotatedCookies) ? rotatedCookies : [rotatedCookies];
+    const newRefreshCookie = rotatedCookiesArr.find((c: string) => c.includes('refreshToken='));
+    expect(newRefreshCookie).toBeDefined();
+    const newRefreshTokenMatch = newRefreshCookie!.match(/refreshToken=([^;]+)/);
     expect(newRefreshTokenMatch).toBeTruthy();
     newRawRefreshToken = newRefreshTokenMatch![1];
   });
@@ -196,6 +203,20 @@ describe('Auth & Organizations Flow (e2e)', () => {
       .expect(200);
 
     expect(logoutRes.body.success).toBe(true);
+
+    const logoutCookies = logoutRes.headers['set-cookie'];
+    expect(logoutCookies).toBeDefined();
+    const logoutCookiesArr = Array.isArray(logoutCookies) ? logoutCookies : [logoutCookies];
+    const clearedRefresh = logoutCookiesArr.find((c: string) => c.includes('refreshToken='));
+    expect(clearedRefresh).toBeDefined();
+    expect(clearedRefresh).toContain('Path=/auth');
+    expect(clearedRefresh).toMatch(/refreshToken=;.*Expires=Thu, 01 Jan 1970 00:00:00 GMT/);
+
+    const clearedHasSession = logoutCookiesArr.find((c: string) => c.includes('has_session='));
+    expect(clearedHasSession).toBeDefined();
+    expect(clearedHasSession).toContain('Path=/');
+    expect(clearedHasSession).not.toContain('Path=/auth');
+    expect(clearedHasSession).toMatch(/has_session=;.*Expires=Thu, 01 Jan 1970 00:00:00 GMT/);
   });
 
   it(`POST /${API_PREFIX}/auth/refresh — rejects refresh with 401 INVALID_REFRESH_TOKEN after user has logged out`, async () => {
