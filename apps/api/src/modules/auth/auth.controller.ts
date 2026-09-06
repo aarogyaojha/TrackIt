@@ -46,9 +46,34 @@ export class AuthController {
     });
   }
 
-  private clearRefreshTokenCookie(res: Response): void {
+  /**
+   * Alongside the Path=/auth-scoped refreshToken cookie, we set a second `has_session` cookie
+   * scoped to Path=/.
+   *
+   * WHY THIS EXISTS:
+   * The real refreshToken is intentionally restricted to Path=/auth for defense-in-depth security
+   * and is therefore invisible to a real browser on any other path (including /dashboard).
+   * This cookie is a broadly-readable, valueless presence-signal only ('1') for the frontend
+   * middleware's UX heuristic.
+   * The API's own guards and JWT validations remain the real security boundary for all protected actions.
+   */
+  private setSessionPresenceCookie(res: Response): void {
+    const maxAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 days matching JWT refresh token lifetime
+    res.cookie('has_session', '1', {
+      httpOnly: true,
+      secure: this.appConfigService.isProduction,
+      sameSite: 'strict',
+      path: '/',
+      maxAge: maxAgeMs,
+    });
+  }
+
+  private clearAuthCookies(res: Response): void {
     res.clearCookie('refreshToken', {
       path: '/auth',
+    });
+    res.clearCookie('has_session', {
+      path: '/',
     });
   }
 
@@ -81,6 +106,7 @@ export class AuthController {
     );
     const tokens = await this.authService.login(user);
     this.setRefreshTokenCookie(res, tokens.refreshToken);
+    this.setSessionPresenceCookie(res);
 
     return {
       accessToken: tokens.accessToken,
@@ -110,6 +136,7 @@ export class AuthController {
     const rawRefreshToken = req.cookies?.refreshToken;
     const tokens = await this.authService.refresh(rawRefreshToken);
     this.setRefreshTokenCookie(res, tokens.refreshToken);
+    this.setSessionPresenceCookie(res);
 
     return {
       accessToken: tokens.accessToken,
@@ -131,7 +158,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.authService.logout(userId);
-    this.clearRefreshTokenCookie(res);
+    this.clearAuthCookies(res);
 
     return { message: AUTH_MESSAGES.LOGGED_OUT };
   }
