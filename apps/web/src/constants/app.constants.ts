@@ -10,6 +10,10 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   TICKETS: '/dashboard/tickets',
   SETTINGS: '/dashboard/settings',
+  SUPERADMIN: '/superadmin',
+  SUPERADMIN_ORGANIZATIONS: '/superadmin/organizations',
+  SUPERADMIN_PLANS: '/superadmin/plans',
+  SUPERADMIN_SETTINGS: '/superadmin/settings',
 } as const;
 
 export const MARKETING_COPY = {

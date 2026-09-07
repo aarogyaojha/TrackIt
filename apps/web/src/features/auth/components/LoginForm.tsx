@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Role } from '@trackit/types';
 import { ErrorCode } from '@/constants/error-codes';
 import { ErrorMessages } from '@/constants/error-messages';
 import { ROUTES } from '@/constants/app.constants';
@@ -45,8 +46,12 @@ export function LoginForm() {
 
   const onSubmit = (data: LoginFormData) => {
     login(data, {
-      onSuccess: () => {
-        router.push(ROUTES.DASHBOARD);
+      onSuccess: (res) => {
+        if (res.user?.role === Role.SUPERADMIN) {
+          router.push(ROUTES.SUPERADMIN);
+        } else {
+          router.push(ROUTES.DASHBOARD);
+        }
       },
     });
   };

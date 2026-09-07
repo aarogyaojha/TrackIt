@@ -11,6 +11,7 @@ export interface DashboardShellProps {
   user: AuthUser | null;
   onLogout: () => void;
   navItems: NavItem[];
+  portalLabel?: string;
   children: React.ReactNode;
 }
 
@@ -18,6 +19,7 @@ export function DashboardShell({
   user,
   onLogout,
   navItems,
+  portalLabel = DASHBOARD_COPY.BADGE,
   children,
 }: DashboardShellProps) {
   return (
@@ -27,7 +29,7 @@ export function DashboardShell({
           <div className="flex items-center space-x-4">
             <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
             <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
-              {DASHBOARD_COPY.BADGE}
+              {portalLabel}
             </span>
           </div>
 
