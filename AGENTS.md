@@ -157,16 +157,19 @@ Run the test suite before reporting a step done — don't call something finishe
 - Every route with server data has a matching skeleton component and a Next.js `loading.tsx` using it. No blank screens or spinner-only loading states.
 - All user-facing strings and error-code-to-message mappings live in `apps/web/src/constants/`.
 - No bare user-facing string literals in components — every piece of copy is a named constant in that feature's `<feature>.constants.ts` (or root `src/constants/app.constants.ts` if shared), mirroring the backend's Swagger-string convention. Internal route paths use the `ROUTES` map from `app.constants.ts`, never bare path strings.
+- **Status Transitions UX**: `TICKET_STATUS_TRANSITIONS` in `apps/web/src/features/tickets/tickets.constants.ts` mirrors the backend's authoritative transition map (`apps/api/src/modules/tickets/ticket.constants.ts`) purely for UX (filtering dropdown options). The backend remains the enforcement authority.
+- **URL-Synced List Filters**: All paginated and filterable lists (e.g. tickets list) must synchronize filter, search, and page state with URL search parameters via `useSearchParams` + `router.replace`, ensuring link shareability and preserving state across navigation.
+- **Dashboard Navigation Shell**: `DashboardNav` (`apps/web/src/components/dashboard-nav/DashboardNav.tsx`) is the reusable vertical navigation component for portal shells (org dashboard and superadmin portal), accepting a generic `NavItem[]` array and highlighting the active route using pathname matching.
 
 ## Theming
 
 - Dark mode via `next-themes` (`attribute="class"`, default `"system"`).
 - Single source of truth for color is the CSS custom properties in `globals.css` — components use only semantic Tailwind classes (`bg-primary`, `text-foreground`, etc.), never raw hex/rgb/oklch values or arbitrary Tailwind color utilities like `text-blue-600`.
+- Semantic Status Colors: `--success`/`--success-foreground` (green) and `--warning`/`--warning-foreground` (amber) are defined in `globals.css` as single sources of truth for ticket-status indicators and warning thresholds. `Badge` variants (`success`, `warning`) consume these tokens.
 - Font variable gotcha: `--font-sans` in `@theme inline` must point at `--font-geist-sans`, a self-reference silently falls back to browser defaults — verify computed `font-family` after any font-related change, don't assume the CSS took effect.
 - Spacing rhythm: Standardize on Tailwind's default scale (4, 6, 8, 12, 16) consistently for card padding, form field gaps, and section spacing; avoid arbitrary one-off values.
 - Elevation: Default `Card` carries `shadow-sm` at rest (`hover:shadow-md transition-shadow` for interactive cards); default/primary `Button` variant carries `shadow-sm`.
 - Layout chrome: Marketing/public pages get `<Navbar />` (sticky, with ThemeToggle, login link, register button) and `<Footer />` (minimal single-row copyright); auth pages stay minimal-chrome (small top-left logo link, top-right ThemeToggle, no full nav, no footer) to reduce distraction on conversion-critical flows.
-- Note that ticket-status semantic colors are a deliberately separate, later decision (Phase 9), not covered by this pass.
 
 ## Frontend Auth
 
