@@ -4,6 +4,8 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { ReduxProvider } from '@/components/ReduxProvider';
 import { QueryProvider } from '@/lib/api/query-client';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { Toaster } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { APP_NAME } from '@/constants/app.constants';
 import './globals.css';
 
@@ -37,7 +39,10 @@ export default function RootLayout({
         <ThemeProvider>
           <ReduxProvider>
             <QueryProvider>
-              <AuthProvider>{children}</AuthProvider>
+              <TooltipProvider>
+                <AuthProvider>{children}</AuthProvider>
+                <Toaster />
+              </TooltipProvider>
             </QueryProvider>
           </ReduxProvider>
         </ThemeProvider>
