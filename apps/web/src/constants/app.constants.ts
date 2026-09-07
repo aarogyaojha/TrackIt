@@ -8,6 +8,8 @@ export const ROUTES = {
   LOGIN: '/login',
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
+  TICKETS: '/dashboard/tickets',
+  SETTINGS: '/dashboard/settings',
 } as const;
 
 export const MARKETING_COPY = {

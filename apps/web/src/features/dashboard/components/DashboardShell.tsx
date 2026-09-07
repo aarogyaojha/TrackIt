@@ -4,22 +4,25 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_NAME } from '@/constants/app.constants';
+import { DashboardNav, NavItem } from '@/components/dashboard-nav/DashboardNav';
 import { DASHBOARD_COPY } from '../dashboard.constants';
 
 export interface DashboardShellProps {
   user: AuthUser | null;
   onLogout: () => void;
+  navItems: NavItem[];
   children: React.ReactNode;
 }
 
 export function DashboardShell({
   user,
   onLogout,
+  navItems,
   children,
 }: DashboardShellProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <header className="border-b bg-card">
+      <header className="border-b border-border bg-card sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
@@ -46,9 +49,14 @@ export function DashboardShell({
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {children}
-      </main>
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-8">
+        <aside className="w-full md:w-56 shrink-0">
+          <DashboardNav items={navItems} />
+        </aside>
+        <main className="flex-1 min-w-0">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
