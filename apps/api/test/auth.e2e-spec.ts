@@ -134,7 +134,7 @@ describe('Auth & Organizations Flow (e2e)', () => {
     const cookiesArr = Array.isArray(cookies) ? cookies : [cookies];
     const refreshCookie = cookiesArr.find((c: string) => c.includes('refreshToken='));
     expect(refreshCookie).toBeDefined();
-    expect(refreshCookie).toContain('Path=/auth');
+    expect(refreshCookie).toContain(`Path=/${API_PREFIX}/auth`);
     expect(refreshCookie!.toLowerCase()).toContain('httponly');
 
     const refreshTokenMatch = refreshCookie!.match(/refreshToken=([^;]+)/);
@@ -209,7 +209,7 @@ describe('Auth & Organizations Flow (e2e)', () => {
     const logoutCookiesArr = Array.isArray(logoutCookies) ? logoutCookies : [logoutCookies];
     const clearedRefresh = logoutCookiesArr.find((c: string) => c.includes('refreshToken='));
     expect(clearedRefresh).toBeDefined();
-    expect(clearedRefresh).toContain('Path=/auth');
+    expect(clearedRefresh).toContain(`Path=/${API_PREFIX}/auth`);
     expect(clearedRefresh).toMatch(/refreshToken=;.*Expires=Thu, 01 Jan 1970 00:00:00 GMT/);
 
     const clearedHasSession = logoutCookiesArr.find((c: string) => c.includes('has_session='));

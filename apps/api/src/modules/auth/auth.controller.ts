@@ -21,7 +21,7 @@ import {
   AUTH_THROTTLE_TTL_MS,
 } from '../../common/throttle/throttle.constants';
 import { AppConfigService } from '../../config/app-config.service';
-import { ErrorCode } from '../../constants';
+import { ErrorCode, API_PREFIX } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { AUTH_MESSAGES, AUTH_SWAGGER } from './auth.constants';
 import { AuthService } from './auth.service';
@@ -42,16 +42,16 @@ export class AuthController {
       httpOnly: true,
       secure: this.appConfigService.isProduction,
       sameSite: 'strict',
-      path: '/auth',
+      path: `/${API_PREFIX}/auth`,
     });
   }
 
   /**
-   * Alongside the Path=/auth-scoped refreshToken cookie, we set a second `has_session` cookie
+   * Alongside the Path=/api/v1/auth-scoped refreshToken cookie, we set a second `has_session` cookie
    * scoped to Path=/.
    *
    * WHY THIS EXISTS:
-   * The real refreshToken is intentionally restricted to Path=/auth for defense-in-depth security
+   * The real refreshToken is intentionally restricted to Path=/api/v1/auth for defense-in-depth security
    * and is therefore invisible to a real browser on any other path (including /dashboard).
    * This cookie is a broadly-readable, valueless presence-signal only ('1') for the frontend
    * middleware's UX heuristic.
@@ -70,7 +70,7 @@ export class AuthController {
 
   private clearAuthCookies(res: Response): void {
     res.clearCookie('refreshToken', {
-      path: '/auth',
+      path: `/${API_PREFIX}/auth`,
     });
     res.clearCookie('has_session', {
       path: '/',
