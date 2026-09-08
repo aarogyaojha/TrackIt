@@ -53,6 +53,7 @@ packages/config  shared eslint + tsconfig
 ## Multi-tenancy
 
 - `Organization` has a globally-unique `slug` (used in URLs and as the "unique code").
+- Reserved slugs (`login`, `register`, `dashboard`, `superadmin`, `api`, `health`, `public`, `t`, `admin`, `app`, `www`, `''`) defined in `organization.constants.ts`'s `RESERVED_SLUGS` prevent collisions with top-level Next.js static routing. The registration loop automatically skips reserved candidates and suffixes a numeric identifier without touching the database.
 - Every tenant-owned resource (tickets, staff users) stores `organizationId`. All repository queries for tenant data must filter by it — no exceptions.
 - `Ticket.code` is unique only within an org: compound unique index `{ organizationId, code }`, not globally unique. Normalized to uppercase before persisting (via schema `uppercase: true` and service normalization).
 - Authenticated admin/staff routes resolve the org from the JWT via `TenantGuard` + `@CurrentOrg()` decorator. Never trust an org id from the request body/query for scoping.
@@ -163,6 +164,8 @@ Run the test suite before reporting a step done — don't call something finishe
 - **Superadmin Route Group & Role Gating**: The `(superadmin)` route group encapsulates superadmin portal pages (`/superadmin`, `/superadmin/organizations`, `/superadmin/plans`, `/superadmin/settings`). `useRequireSuperAdmin` role-gates access: unauthenticated callers redirect to `/login`, while non-SUPERADMIN authenticated callers redirect to `/dashboard`.
 - **Org Status Actions Map**: `ORG_STATUS_ACTIONS` in `apps/web/src/features/superadmin/superadmin.constants.ts` mirrors the backend's authoritative transition methods in `apps/api/src/modules/organizations/organization.service.ts` (`approve`, `reject`, `suspend`, `reactivate`).
 - **Confirmation Dialog Pattern**: In admin/superadmin action controls, inline confirmation dialogs (`AlertDialog`) are required only for access-removing or irreversible destructive actions (e.g. Reject Organization, Suspend Organization, Plan Tier Change). Non-destructive/constructive actions (e.g. Approve, Reactivate) fire directly with optimistic/loading state and toast feedback.
+- **Public Tracking Surface & Privacy-Preserving Errors**: The public status tracking page (`apps/web/src/features/public-tracking/`) uses a standalone, unauthenticated HTTP client (isolated from the shared `apiClient`) to ensure no credentials, access tokens, or refresh interceptors are attached to anonymous requests. Public-facing error messaging deliberately never distinguishes "not found" from "exists but suspended/rejected," preserving privacy by showing a single uniform "Ticket Not Found" message (only rate limiting receives a distinct message). This ambiguity rule applies to all future public pages.
+- **Accepted Global Auth Rehydration Tradeoff**: `AuthProvider`'s session refresh-on-mount triggers globally on all routes including anonymous/public tracking URLs; this is accepted as harmless for current architecture and not altered.
 
 ## Theming
 
