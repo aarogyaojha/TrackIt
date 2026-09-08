@@ -121,7 +121,7 @@ export default function SettingsPage() {
                   value={org?.slug || ''}
                   className="flex-1 min-w-0 rounded-md border border-input bg-muted/40 px-3 py-1.5 text-sm text-foreground font-mono focus:outline-hidden"
                 />
-                <Tooltip open={copiedSlug ? true : undefined}>
+                <Tooltip open={copiedSlug} onOpenChange={setCopiedSlug}>
                   <TooltipTrigger
                     render={
                       <Button
