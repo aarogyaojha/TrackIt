@@ -416,4 +416,20 @@ describe('Superadmin & Platform Management (e2e)', () => {
     secondOrgId = res.body.data.organization.id;
     expect(secondOrgId).toBeDefined();
   });
+
+  it(`POST /${API_PREFIX}/organizations/register — registering an org named 'Dashboard' produces suffixed slug (not bare 'dashboard')`, async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/register`)
+      .send({
+        orgName: 'Dashboard',
+        adminName: 'Reserved Admin',
+        adminEmail: 'admin@reservedslugtest.com',
+        adminPassword: 'Password123!',
+      })
+      .expect(201);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.organization.slug).not.toBe('dashboard');
+    expect(res.body.data.organization.slug).toBe('dashboard-1');
+  });
 });

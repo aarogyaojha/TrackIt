@@ -38,6 +38,26 @@ export const ORGANIZATIONS_SWAGGER = {
 export const MAX_SLUG_RETRIES = 5;
 export const MIN_PASSWORD_LENGTH = 8;
 
+/**
+ * Slugs reserved for internal top-level platform routes and endpoints.
+ * Next.js resolves static routes before dynamic [orgSlug] segments —
+ * a reserved-word slug would make an org's public tracking page permanently unreachable.
+ */
+export const RESERVED_SLUGS: string[] = [
+  'login',
+  'register',
+  'dashboard',
+  'superadmin',
+  'api',
+  'health',
+  'public',
+  't',
+  'admin',
+  'app',
+  'www',
+  '',
+];
+
 export const REGISTER_ORG_DTO_SWAGGER = {
   ORG_NAME_DESCRIPTION: 'Name of the organization',
   ORG_NAME_EXAMPLE: 'Apex Auto Repair',

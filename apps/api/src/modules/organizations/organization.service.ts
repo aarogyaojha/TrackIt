@@ -9,7 +9,7 @@ import { PlatformSettingsService } from '../platform-settings/platform-settings.
 import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { UsersService } from '../users/user.service';
 import { RegisterOrganizationDto } from './dto/register-organization.dto';
-import { MAX_SLUG_RETRIES } from './organization.constants';
+import { MAX_SLUG_RETRIES, RESERVED_SLUGS } from './organization.constants';
 import { OrganizationsRepository } from './organization.repository';
 import { OrganizationDocument } from './organization.schema';
 
@@ -45,6 +45,10 @@ export class OrganizationsService {
     for (let slugAttempt = 0; slugAttempt <= MAX_SLUG_RETRIES; slugAttempt++) {
       const slug =
         slugAttempt === 0 ? baseSlug : `${baseSlug}-${slugAttempt}`;
+
+      if (RESERVED_SLUGS.includes(slug.toLowerCase())) {
+        continue;
+      }
 
       for (let txAttempt = 0; txAttempt < 3; txAttempt++) {
         const session = await this.connection.startSession();

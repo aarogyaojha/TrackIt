@@ -249,6 +249,54 @@ describe('OrganizationsService', () => {
       expect(result.organization.slug).toBe('apex-auto-repair-1');
     });
 
+    it('should skip reserved slug without querying database and produce suffixed slug', async () => {
+      const reservedSlugDto = {
+        orgName: 'Login',
+        adminName: 'Login Admin',
+        adminEmail: 'admin@loginorg.com',
+        adminPassword: 'Password123!',
+      };
+
+      platformSettingsService.getSettings.mockResolvedValue({
+        requireOrgApproval: false,
+      } as unknown as ReturnType<PlatformSettingsService['getSettings']> extends Promise<infer U> ? U : never);
+
+      const orgId = new Types.ObjectId();
+      const mockOrg = {
+        _id: orgId,
+        name: 'Login',
+        slug: 'login-1',
+        status: OrgStatus.ACTIVE,
+      } as unknown as OrganizationDocument;
+
+      organizationsRepository.create.mockResolvedValue(mockOrg);
+
+      const mockUser = {
+        _id: new Types.ObjectId(),
+        email: 'admin@loginorg.com',
+        name: 'Login Admin',
+        role: Role.ORG_ADMIN,
+        organizationId: orgId,
+      };
+
+      usersService.createUser.mockResolvedValue(
+        mockUser as unknown as ReturnType<UsersService['createUser']> extends Promise<infer U> ? U : never,
+      );
+
+      const result = await service.registerOrganization(reservedSlugDto);
+
+      expect(organizationsRepository.create).toHaveBeenCalledTimes(1);
+      expect(organizationsRepository.create).toHaveBeenCalledWith(
+        {
+          name: 'Login',
+          slug: 'login-1',
+          status: OrgStatus.ACTIVE,
+        },
+        { session: mockSession },
+      );
+      expect(result.organization.slug).toBe('login-1');
+    });
+
     it('should abort transaction if user creation throws unexpected error', async () => {
       platformSettingsService.getSettings.mockResolvedValue({
         requireOrgApproval: true,
