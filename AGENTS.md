@@ -21,12 +21,14 @@ packages/config  shared eslint + tsconfig
 ## Commands
 
 ### Root (Turborepo)
+
 - `npm run dev` — Run all apps concurrently in development mode
 - `npm run build` — Build all workspaces
 - `npm run lint` — Lint all workspaces
 - `npm run test` — Run test suites across workspaces
 
 ### Backend (`apps/api`)
+
 - `npm run start:dev --workspace=api` — Start NestJS dev server with watch mode
 - `npm run build --workspace=api` — Compile NestJS application
 - `npm run lint --workspace=api` — Lint backend codebase
@@ -35,6 +37,7 @@ packages/config  shared eslint + tsconfig
 - `npm run seed:superadmin --workspace=api` — Seed superadmin account
 
 ### Frontend (`apps/web`)
+
 - `npm run dev --workspace=web` — Start Next.js development server
 - `npm run build --workspace=web` — Build Next.js production bundle
 - `npm run lint --workspace=web` — Lint frontend codebase
