@@ -19,6 +19,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
+import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organization.module';
 import { PlansModule } from './modules/plans/plan.module';
@@ -57,6 +58,7 @@ import { UsersModule } from './modules/users/user.module';
     TicketsModule,
     AuthModule,
     HealthModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

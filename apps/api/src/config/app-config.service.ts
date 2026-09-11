@@ -46,6 +46,18 @@ export class AppConfigService {
     return this.configService.get<string | undefined>('superadminPassword', { infer: true });
   }
 
+  get resendApiKey(): string | undefined {
+    return this.configService.get<string | undefined>('resendApiKey', { infer: true });
+  }
+
+  get emailFromAddress(): string {
+    return this.configService.get<string>('emailFromAddress', { infer: true });
+  }
+
+  get emailFromName(): string {
+    return this.configService.get<string>('emailFromName', { infer: true });
+  }
+
   get isProduction(): boolean {
     return this.nodeEnv === 'production';
   }

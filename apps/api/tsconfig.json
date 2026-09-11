@@ -13,6 +13,7 @@
     "allowSyntheticDefaultImports": true,
     "target": "ES2023",
     "types": ["node", "jest"],
+    "jsx": "react-jsx",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

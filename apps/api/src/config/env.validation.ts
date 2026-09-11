@@ -13,4 +13,7 @@ export const envValidationSchema = Joi.object({
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
   SUPERADMIN_EMAIL: Joi.string().email({ tlds: false }).optional(),
   SUPERADMIN_PASSWORD: Joi.string().min(8).optional(),
+  RESEND_API_KEY: Joi.string().optional(),
+  EMAIL_FROM_ADDRESS: Joi.string().email({ tlds: false }).default('noreply@trackit.local'),
+  EMAIL_FROM_NAME: Joi.string().default('TrackIt'),
 });

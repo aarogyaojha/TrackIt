@@ -9,6 +9,9 @@ export interface AppConfig {
   jwtRefreshExpiresIn: string;
   superadminEmail?: string;
   superadminPassword?: string;
+  resendApiKey?: string;
+  emailFromAddress: string;
+  emailFromName: string;
 }
 
 export const configuration = (): AppConfig => ({
@@ -22,6 +25,9 @@ export const configuration = (): AppConfig => ({
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   superadminEmail: process.env.SUPERADMIN_EMAIL,
   superadminPassword: process.env.SUPERADMIN_PASSWORD,
+  resendApiKey: process.env.RESEND_API_KEY,
+  emailFromAddress: process.env.EMAIL_FROM_ADDRESS || 'noreply@trackit.local',
+  emailFromName: process.env.EMAIL_FROM_NAME || 'TrackIt',
 });
 
 export default configuration;

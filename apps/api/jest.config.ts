@@ -1,21 +1,25 @@
 import type { Config } from 'jest';
 
 const config: Config = {
-  moduleFileExtensions: ['js', 'json', 'ts'],
+  moduleFileExtensions: ['js', 'json', 'ts', 'tsx'],
   rootDir: '.',
-  testRegex: '.*\\.spec\\.ts$',
+  testRegex: '.*\\.spec\\.(t|j)sx?$',
   transform: {
-    '^.+\\.(t|j)s$': [
+    '^.+\\.(t|j)sx?$': [
       '@swc/jest',
       {
         jsc: {
           parser: {
             syntax: 'typescript',
+            tsx: true,
             decorators: true,
           },
           transform: {
             legacyDecorator: true,
             decoratorMetadata: true,
+            react: {
+              runtime: 'automatic',
+            },
           },
         },
       },
