@@ -8,9 +8,13 @@ import {
   Res,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
+  ApiConflictResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
@@ -28,6 +32,8 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import { LoginDto } from './dto/login.dto';
+import { ResendEmailVerificationDto } from './dto/resend-email-verification.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @ApiTags(AUTH_SWAGGER.TAG)
 @Controller('auth')
@@ -161,5 +167,64 @@ export class AuthController {
     this.clearAuthCookies(res);
 
     return { message: AUTH_MESSAGES.LOGGED_OUT };
+  }
+
+  @Public()
+  @Throttle({
+    auth: {
+      limit: AUTH_THROTTLE_LIMIT,
+      ttl: AUTH_THROTTLE_TTL_MS,
+    },
+  })
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: AUTH_SWAGGER.VERIFY_EMAIL_SUMMARY,
+    description: AUTH_SWAGGER.VERIFY_EMAIL_DESCRIPTION,
+  })
+  @ApiOkResponse({ description: AUTH_SWAGGER.VERIFY_EMAIL_OK_DESCRIPTION })
+  @ApiBadRequestResponse({
+    description: AUTH_SWAGGER.VERIFY_EMAIL_BAD_REQUEST_DESCRIPTION,
+  })
+  @ApiConflictResponse({
+    description: AUTH_SWAGGER.VERIFY_EMAIL_CONFLICT_DESCRIPTION,
+  })
+  @ApiResponse({
+    status: HttpStatus.TOO_MANY_REQUESTS,
+    description: AUTH_SWAGGER.VERIFY_EMAIL_TOO_MANY_REQUESTS_DESCRIPTION,
+  })
+  @ApiNotFoundResponse({
+    description: AUTH_SWAGGER.VERIFY_EMAIL_NOT_FOUND_DESCRIPTION,
+  })
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    await this.authService.verifyEmail(dto.email, dto.otp);
+    return { message: AUTH_MESSAGES.EMAIL_VERIFIED };
+  }
+
+  @Public()
+  @Throttle({
+    auth: {
+      limit: AUTH_THROTTLE_LIMIT,
+      ttl: AUTH_THROTTLE_TTL_MS,
+    },
+  })
+  @Post('resend-email-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: AUTH_SWAGGER.RESEND_EMAIL_VERIFICATION_SUMMARY,
+    description: AUTH_SWAGGER.RESEND_EMAIL_VERIFICATION_DESCRIPTION,
+  })
+  @ApiOkResponse({
+    description: AUTH_SWAGGER.RESEND_EMAIL_VERIFICATION_OK_DESCRIPTION,
+  })
+  @ApiConflictResponse({
+    description: AUTH_SWAGGER.RESEND_EMAIL_VERIFICATION_CONFLICT_DESCRIPTION,
+  })
+  @ApiNotFoundResponse({
+    description: AUTH_SWAGGER.RESEND_EMAIL_VERIFICATION_NOT_FOUND_DESCRIPTION,
+  })
+  async resendEmailVerification(@Body() dto: ResendEmailVerificationDto) {
+    await this.authService.resendEmailVerificationOtp(dto.email);
+    return { message: AUTH_MESSAGES.EMAIL_VERIFICATION_SENT };
   }
 }

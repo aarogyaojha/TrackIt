@@ -7,6 +7,7 @@ import { AppModule } from '../src/app.module';
 import { AppConfigService } from '../src/config/app-config.service';
 import { API_PREFIX, ErrorCode } from '../src/constants';
 import { DEFAULT_PLAN_LIMITS } from '../src/modules/plans/plan.constants';
+import { UsersRepository } from '../src/modules/users/user.repository';
 import { UsersService } from '../src/modules/users/user.service';
 import {
   startMongoMemoryServer,
@@ -17,6 +18,7 @@ describe('Plans & Subscriptions (e2e)', () => {
   let app: INestApplication;
   let mongoUri: string;
   let usersService: UsersService;
+  let usersRepository: UsersRepository;
 
   let superadminAccessToken: string;
   let orgAdminAccessToken: string;
@@ -57,6 +59,7 @@ describe('Plans & Subscriptions (e2e)', () => {
 
     await app.init();
     usersService = app.get(UsersService);
+    usersRepository = app.get(UsersRepository);
 
     // Seed superadmin
     await usersService.createUser({
@@ -101,6 +104,14 @@ describe('Plans & Subscriptions (e2e)', () => {
     expect(res.body.success).toBe(true);
     orgId = res.body.data.organization.id;
     expect(orgId).toBeDefined();
+
+    const user = await usersRepository.findByEmailWithPassword(
+      'bob@apexmotors.com',
+    );
+    expect(user).toBeDefined();
+    await usersRepository.updateById(user!._id, {
+      $set: { emailVerified: true },
+    });
   });
 
   it(`POST /${API_PREFIX}/organizations/:id/approve — superadmin approves the organization`, async () => {

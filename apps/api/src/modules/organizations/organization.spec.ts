@@ -40,6 +40,7 @@ describe('OrganizationsService', () => {
 
   const mockUsersService = {
     createUser: jest.fn(),
+    sendEmailVerificationOtp: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockPlatformSettingsService = {

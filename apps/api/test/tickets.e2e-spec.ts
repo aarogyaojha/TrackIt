@@ -6,6 +6,7 @@ import { OrgStatus, Role, TicketStatus } from '@trackit/types';
 import { AppModule } from '../src/app.module';
 import { AppConfigService } from '../src/config/app-config.service';
 import { API_PREFIX, ErrorCode } from '../src/constants';
+import { UsersRepository } from '../src/modules/users/user.repository';
 import { UsersService } from '../src/modules/users/user.service';
 import {
   startMongoMemoryServer,
@@ -16,6 +17,7 @@ describe('Tickets Module (e2e)', () => {
   let app: INestApplication;
   let mongoUri: string;
   let usersService: UsersService;
+  let usersRepository: UsersRepository;
 
   let superadminAccessToken: string;
   let orgAdminAccessToken: string;
@@ -62,6 +64,7 @@ describe('Tickets Module (e2e)', () => {
 
     await app.init();
     usersService = app.get(UsersService);
+    usersRepository = app.get(UsersRepository);
 
     // Seed superadmin
     await usersService.createUser({
@@ -108,6 +111,14 @@ describe('Tickets Module (e2e)', () => {
     orgSlug = res.body.data.organization.slug;
     expect(orgId).toBeDefined();
     expect(orgSlug).toBe('apex-bike-repair');
+
+    const user = await usersRepository.findByEmailWithPassword(
+      'alice@apexbikes.com',
+    );
+    expect(user).toBeDefined();
+    await usersRepository.updateById(user!._id, {
+      $set: { emailVerified: true },
+    });
   });
 
   it(`POST /${API_PREFIX}/organizations/:id/approve — superadmin approves the first org`, async () => {
@@ -145,6 +156,14 @@ describe('Tickets Module (e2e)', () => {
       .expect(201);
 
     secondOrgId = regRes.body.data.organization.id;
+
+    const user2 = await usersRepository.findByEmailWithPassword(
+      'bob@zenithtailors.com',
+    );
+    expect(user2).toBeDefined();
+    await usersRepository.updateById(user2!._id, {
+      $set: { emailVerified: true },
+    });
 
     await request(app.getHttpServer())
       .post(`/${API_PREFIX}/organizations/${secondOrgId}/approve`)
@@ -356,6 +375,14 @@ describe('Tickets Module (e2e)', () => {
       .expect(201);
 
     const limitOrgId = limitOrgReg.body.data.organization.id;
+
+    const limitUser = await usersRepository.findByEmailWithPassword(
+      'admin@limittest.com',
+    );
+    expect(limitUser).toBeDefined();
+    await usersRepository.updateById(limitUser!._id, {
+      $set: { emailVerified: true },
+    });
 
     await request(app.getHttpServer())
       .post(`/${API_PREFIX}/organizations/${limitOrgId}/approve`)

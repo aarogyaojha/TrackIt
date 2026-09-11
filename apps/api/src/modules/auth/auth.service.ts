@@ -54,6 +54,14 @@ export class AuthService {
     }
 
     if (user.organizationId) {
+      if (!user.emailVerified) {
+        throw new AppException(
+          HttpStatus.FORBIDDEN,
+          ErrorCode.EMAIL_NOT_VERIFIED,
+          ErrorMessages[ErrorCode.EMAIL_NOT_VERIFIED],
+        );
+      }
+
       const org = await this.organizationsService.getById(
         user.organizationId.toString(),
       );
@@ -182,5 +190,13 @@ export class AuthService {
 
   async logout(userId: string): Promise<void> {
     await this.usersService.clearRefreshTokenHash(userId);
+  }
+
+  async verifyEmail(email: string, otp: string): Promise<void> {
+    await this.usersService.verifyEmailOtp(email, otp);
+  }
+
+  async resendEmailVerificationOtp(email: string): Promise<void> {
+    await this.usersService.resendEmailVerificationOtp(email);
   }
 }

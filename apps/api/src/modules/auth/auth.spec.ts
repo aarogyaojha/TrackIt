@@ -22,6 +22,8 @@ describe('AuthService', () => {
     findByIdWithRefreshToken: jest.fn(),
     updateRefreshTokenHash: jest.fn(),
     clearRefreshTokenHash: jest.fn(),
+    verifyEmailOtp: jest.fn(),
+    resendEmailVerificationOtp: jest.fn(),
   };
 
   const mockOrganizationsService = {
@@ -89,6 +91,7 @@ describe('AuthService', () => {
         organizationId: orgId,
         passwordHash,
         isActive: true,
+        emailVerified: true,
       } as unknown as UserDocument;
 
       mockUsersService.findByEmail.mockResolvedValue(userMock);
@@ -100,6 +103,54 @@ describe('AuthService', () => {
 
       const result = await service.validateCredentials(
         'user@example.com',
+        rawPassword,
+      );
+
+      expect(result).toBe(userMock);
+    });
+
+    it('should throw EMAIL_NOT_VERIFIED when user email is not verified', async () => {
+      const userMock = {
+        _id: new Types.ObjectId(),
+        email: 'user@example.com',
+        name: 'John Doe',
+        role: Role.ORG_ADMIN,
+        organizationId: orgId,
+        passwordHash,
+        isActive: true,
+        emailVerified: false,
+      } as unknown as UserDocument;
+
+      mockUsersService.findByEmail.mockResolvedValue(userMock);
+
+      await expect(
+        service.validateCredentials('user@example.com', rawPassword),
+      ).rejects.toThrow(AppException);
+
+      try {
+        await service.validateCredentials('user@example.com', rawPassword);
+      } catch (err: unknown) {
+        const appErr = err as AppException;
+        expect(appErr.code).toBe(ErrorCode.EMAIL_NOT_VERIFIED);
+        expect(appErr.getStatus()).toBe(HttpStatus.FORBIDDEN);
+      }
+    });
+
+    it('should allow SUPERADMIN to log in without organizationId even if emailVerified is not set', async () => {
+      const userMock = {
+        _id: new Types.ObjectId(),
+        email: 'superadmin@trackit.internal',
+        name: 'Super Admin',
+        role: Role.SUPERADMIN,
+        organizationId: null,
+        passwordHash,
+        isActive: true,
+      } as unknown as UserDocument;
+
+      mockUsersService.findByEmail.mockResolvedValue(userMock);
+
+      const result = await service.validateCredentials(
+        'superadmin@trackit.internal',
         rawPassword,
       );
 
@@ -128,6 +179,7 @@ describe('AuthService', () => {
         email: 'user@example.com',
         passwordHash,
         isActive: true,
+        emailVerified: true,
       } as unknown as UserDocument;
 
       mockUsersService.findByEmail.mockResolvedValue(userMock);
@@ -155,6 +207,7 @@ describe('AuthService', () => {
         organizationId: orgId,
         passwordHash,
         isActive: true,
+        emailVerified: true,
       } as unknown as UserDocument;
 
       mockUsersService.findByEmail.mockResolvedValue(userMock);
@@ -306,6 +359,31 @@ describe('AuthService', () => {
 
       await expect(service.refresh('invalid_token')).rejects.toThrow(
         AppException,
+      );
+    });
+  });
+
+  describe('verifyEmail', () => {
+    it('should delegate to usersService.verifyEmailOtp', async () => {
+      mockUsersService.verifyEmailOtp.mockResolvedValue(undefined);
+
+      await service.verifyEmail('user@example.com', '123456');
+
+      expect(mockUsersService.verifyEmailOtp).toHaveBeenCalledWith(
+        'user@example.com',
+        '123456',
+      );
+    });
+  });
+
+  describe('resendEmailVerificationOtp', () => {
+    it('should delegate to usersService.resendEmailVerificationOtp', async () => {
+      mockUsersService.resendEmailVerificationOtp.mockResolvedValue(undefined);
+
+      await service.resendEmailVerificationOtp('user@example.com');
+
+      expect(mockUsersService.resendEmailVerificationOtp).toHaveBeenCalledWith(
+        'user@example.com',
       );
     });
   });

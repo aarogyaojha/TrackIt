@@ -16,6 +16,13 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
   [ErrorCode.INVALID_STATUS_TRANSITION]: 'Invalid status transition for the resource',
   [ErrorCode.PLAN_LIMIT_EXCEEDED]: 'Plan limit exceeded for this operation',
   [ErrorCode.RATE_LIMITED]: 'Too many requests. Please try again later.',
+  [ErrorCode.EMAIL_SEND_FAILED]: 'Failed to send email notification',
+  [ErrorCode.OTP_INVALID]: 'Invalid verification code',
+  [ErrorCode.OTP_EXPIRED]: 'Verification code has expired',
+  [ErrorCode.OTP_MAX_ATTEMPTS_EXCEEDED]:
+    'Maximum verification attempts exceeded. Please request a new code.',
+  [ErrorCode.EMAIL_ALREADY_VERIFIED]: 'Email is already verified',
+  [ErrorCode.EMAIL_NOT_VERIFIED]: 'Email address is not verified',
 };
 
 export const ERROR_MESSAGES = ErrorMessages;

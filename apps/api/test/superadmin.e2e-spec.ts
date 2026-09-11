@@ -6,6 +6,7 @@ import { OrgStatus, Role } from '@trackit/types';
 import { AppModule } from '../src/app.module';
 import { AppConfigService } from '../src/config/app-config.service';
 import { API_PREFIX } from '../src/constants';
+import { UsersRepository } from '../src/modules/users/user.repository';
 import { UsersService } from '../src/modules/users/user.service';
 import {
   startMongoMemoryServer,
@@ -16,6 +17,7 @@ describe('Superadmin & Platform Management (e2e)', () => {
   let app: INestApplication;
   let mongoUri: string;
   let usersService: UsersService;
+  let usersRepository: UsersRepository;
 
   let superadminAccessToken: string;
   let orgAdminAccessToken: string;
@@ -57,6 +59,7 @@ describe('Superadmin & Platform Management (e2e)', () => {
 
     await app.init();
     usersService = app.get(UsersService);
+    usersRepository = app.get(UsersRepository);
 
     // Seed superadmin user directly via UsersService
     await usersService.createUser({
@@ -112,6 +115,14 @@ describe('Superadmin & Platform Management (e2e)', () => {
 
     orgId = res.body.data.organization.id;
     expect(orgId).toBeDefined();
+
+    const user = await usersRepository.findByEmailWithPassword(
+      'alice@quickfix.com',
+    );
+    expect(user).toBeDefined();
+    await usersRepository.updateById(user!._id, {
+      $set: { emailVerified: true },
+    });
   });
 
   it(`GET /${API_PREFIX}/organizations — non-superadmin (anonymous/unauthenticated) receives 401 UNAUTHORIZED`, async () => {
@@ -250,6 +261,14 @@ describe('Superadmin & Platform Management (e2e)', () => {
     });
 
     // Admin cannot log in to a REJECTED organization
+    const rejectUser = await usersRepository.findByEmailWithPassword(
+      'reject@rejectme.com',
+    );
+    expect(rejectUser).toBeDefined();
+    await usersRepository.updateById(rejectUser!._id, {
+      $set: { emailVerified: true },
+    });
+
     const loginRes = await request(app.getHttpServer())
       .post(`/${API_PREFIX}/auth/login`)
       .send({

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, QueryFilter } from 'mongoose';
 import { OrgStatus, Role } from '@trackit/types';
@@ -15,6 +15,8 @@ import { OrganizationDocument } from './organization.schema';
 
 @Injectable()
 export class OrganizationsService {
+  private readonly logger = new Logger(OrganizationsService.name);
+
   constructor(
     private readonly organizationsRepository: OrganizationsRepository,
     private readonly usersService: UsersService,
@@ -82,6 +84,20 @@ export class OrganizationsService {
           );
 
           await session.commitTransaction();
+
+          try {
+            await this.usersService.sendEmailVerificationOtp(
+              user._id.toString(),
+              user.email,
+              user.name,
+            );
+          } catch (emailErr) {
+            this.logger.error(
+              `Failed to send email verification OTP for organization ${org._id}: ${(emailErr as Error)?.message}`,
+              emailErr instanceof Error ? emailErr.stack : undefined,
+            );
+          }
+
           return { organization: org, user };
 
         } catch (err: unknown) {
