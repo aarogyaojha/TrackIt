@@ -35,6 +35,48 @@ export class UsersRepository extends BaseRepository<UserDocument> {
     return this.updateById(id, { $set: { refreshTokenHash } });
   }
 
+  async findByEmailWithOtp(
+    email: string,
+    options?: QueryOptions<UserDocument>,
+  ): Promise<UserDocument | null> {
+    return this.findOne(
+      { email: email.toLowerCase() },
+      '+emailOtpHash +emailOtpExpiresAt +emailOtpAttempts',
+      options,
+    );
+  }
+
+  async setEmailOtp(
+    userId: string,
+    hash: string,
+    expiresAt: Date,
+  ): Promise<UserDocument | null> {
+    return this.updateById(userId, {
+      $set: {
+        emailOtpHash: hash,
+        emailOtpExpiresAt: expiresAt,
+        emailOtpAttempts: 0,
+      },
+    });
+  }
+
+  async incrementOtpAttempts(userId: string): Promise<UserDocument | null> {
+    return this.updateById(userId, {
+      $inc: { emailOtpAttempts: 1 },
+    });
+  }
+
+  async markEmailVerified(userId: string): Promise<UserDocument | null> {
+    return this.updateById(userId, {
+      $set: { emailVerified: true },
+      $unset: {
+        emailOtpHash: 1,
+        emailOtpExpiresAt: 1,
+        emailOtpAttempts: 1,
+      },
+    });
+  }
+
   async countByOrganizationId(
     organizationId: string | Types.ObjectId,
   ): Promise<number> {

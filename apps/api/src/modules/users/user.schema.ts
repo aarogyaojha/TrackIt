@@ -59,6 +59,33 @@ export class User {
   isActive: boolean;
 
   @Prop({
+    type: Boolean,
+    default: false,
+  })
+  emailVerified: boolean;
+
+  @Prop({
+    type: String,
+    select: false,
+    default: null,
+  })
+  emailOtpHash?: string | null;
+
+  @Prop({
+    type: Date,
+    select: false,
+    default: null,
+  })
+  emailOtpExpiresAt?: Date | null;
+
+  @Prop({
+    type: Number,
+    select: false,
+    default: 0,
+  })
+  emailOtpAttempts?: number;
+
+  @Prop({
     type: String,
     select: false,
     default: null,
