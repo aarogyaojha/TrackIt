@@ -17,6 +17,14 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
   [ErrorCode.PLAN_LIMIT_EXCEEDED]:
     'Plan limit reached. Please contact support or ask an administrator to upgrade your plan tier.',
   [ErrorCode.NOT_FOUND]: 'The requested resource was not found.',
+  [ErrorCode.EMAIL_SEND_FAILED]: 'Failed to send email notification.',
+  [ErrorCode.OTP_INVALID]: 'Invalid verification code.',
+  [ErrorCode.OTP_EXPIRED]: 'Verification code has expired.',
+  [ErrorCode.OTP_MAX_ATTEMPTS_EXCEEDED]:
+    'Maximum verification attempts exceeded. Please request a new code.',
+  [ErrorCode.EMAIL_ALREADY_VERIFIED]: 'Email is already verified.',
+  [ErrorCode.EMAIL_NOT_VERIFIED]:
+    'Your email address is not verified. Please verify your email before logging in.',
 };
 
 export const ERROR_MESSAGES = ErrorMessages;

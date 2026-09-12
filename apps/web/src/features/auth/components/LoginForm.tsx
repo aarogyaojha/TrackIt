@@ -11,6 +11,7 @@ import { ErrorMessages } from '@/constants/error-messages';
 import { ROUTES } from '@/constants/app.constants';
 import { LOGIN_COPY } from '../auth.constants';
 import { useLogin } from '../api/useLogin';
+import { useResendVerificationOtp } from '../api/useResendVerificationOtp';
 import { loginSchema, LoginFormData } from '../schemas/login.schema';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,15 @@ import { Input } from '@/components/ui/input';
 export function LoginForm() {
   const router = useRouter();
   const { mutate: login, isPending, error } = useLogin();
+  const {
+    mutate: resendOtp,
+    isPending: isResending,
+    error: resendError,
+  } = useResendVerificationOtp();
+
+  const [resendFeedback, setResendFeedback] = React.useState<string | null>(
+    null,
+  );
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +55,7 @@ export function LoginForm() {
   });
 
   const onSubmit = (data: LoginFormData) => {
+    setResendFeedback(null);
     login(data, {
       onSuccess: (res) => {
         if (res.user?.role === Role.SUPERADMIN) {
@@ -56,11 +67,33 @@ export function LoginForm() {
     });
   };
 
+  const handleResend = () => {
+    const currentEmail = form.getValues('email');
+    if (!currentEmail) {
+      form.trigger('email');
+      return;
+    }
+
+    setResendFeedback(null);
+    resendOtp(
+      { email: currentEmail },
+      {
+        onSuccess: () => {
+          setResendFeedback(LOGIN_COPY.RESEND_SUCCESS_MESSAGE);
+        },
+      },
+    );
+  };
+
   const errorCode = error?.response?.data?.error?.code;
   const isOrgNotApproved = errorCode === ErrorCode.ORG_NOT_APPROVED;
+  const isEmailNotVerified = errorCode === ErrorCode.EMAIL_NOT_VERIFIED;
   const genericErrorMessage =
     error?.response?.data?.error?.message ||
     (error ? LOGIN_COPY.GENERIC_ERROR : null);
+
+  const resendErrorMessage =
+    resendError?.response?.data?.error?.message || null;
 
   return (
     <Card className="w-full max-w-md mx-auto">
@@ -78,7 +111,47 @@ export function LoginForm() {
           </Alert>
         )}
 
-        {error && !isOrgNotApproved && (
+        {isEmailNotVerified && (
+          <Alert variant="destructive" className="space-y-2">
+            <AlertTitle>{LOGIN_COPY.EMAIL_NOT_VERIFIED_TITLE}</AlertTitle>
+            <AlertDescription className="space-y-2">
+              <p>{LOGIN_COPY.EMAIL_NOT_VERIFIED_DESCRIPTION}</p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Link
+                  href={`${ROUTES.VERIFY_EMAIL}?email=${encodeURIComponent(form.getValues('email'))}`}
+                  className="text-xs font-semibold underline underline-offset-4 hover:opacity-80"
+                >
+                  {LOGIN_COPY.VERIFY_EMAIL_ACTION}
+                </Link>
+                <span className="text-xs opacity-70">•</span>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={isResending}
+                  className="text-xs font-semibold underline underline-offset-4 hover:opacity-80 disabled:opacity-50"
+                >
+                  {isResending
+                    ? LOGIN_COPY.RESEND_CODE_PENDING
+                    : LOGIN_COPY.RESEND_CODE_ACTION}
+                </button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {resendFeedback && (
+          <Alert>
+            <AlertDescription>{resendFeedback}</AlertDescription>
+          </Alert>
+        )}
+
+        {resendErrorMessage && (
+          <Alert variant="destructive">
+            <AlertDescription>{resendErrorMessage}</AlertDescription>
+          </Alert>
+        )}
+
+        {error && !isOrgNotApproved && !isEmailNotVerified && (
           <Alert variant="destructive">
             <AlertTitle>{LOGIN_COPY.LOGIN_FAILED_TITLE}</AlertTitle>
             <AlertDescription>{genericErrorMessage}</AlertDescription>

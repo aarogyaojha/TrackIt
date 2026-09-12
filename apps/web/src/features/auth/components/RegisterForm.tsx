@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ROUTES } from '@/constants/app.constants';
@@ -9,7 +10,7 @@ import { REGISTER_COPY } from '../auth.constants';
 import { useRegisterOrganization } from '../api/useRegisterOrganization';
 import { registerSchema, RegisterFormData } from '../schemas/register.schema';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -27,15 +28,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 
 export function RegisterForm() {
+  const router = useRouter();
   const {
     mutate: registerOrg,
     isPending,
-    isSuccess,
     error,
-    data: responseData,
   } = useRegisterOrganization();
 
   const form = useForm<RegisterFormData>({
@@ -50,50 +49,22 @@ export function RegisterForm() {
   });
 
   const onSubmit = (data: RegisterFormData) => {
-    registerOrg({
-      orgName: data.orgName,
-      adminName: data.adminName,
-      adminEmail: data.adminEmail,
-      adminPassword: data.adminPassword,
-    });
-  };
-
-  if (isSuccess) {
-    const orgName =
-      responseData?.organization?.name || REGISTER_COPY.SUCCESS_DEFAULT_ORG;
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>{REGISTER_COPY.SUCCESS_TITLE}</CardTitle>
-          <CardDescription>
-            {orgName} {REGISTER_COPY.SUCCESS_DESCRIPTION_SUFFIX}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <AlertTitle>{REGISTER_COPY.SUCCESS_ALERT_TITLE}</AlertTitle>
-            <AlertDescription>
-              {REGISTER_COPY.SUCCESS_ALERT_DESCRIPTION}
-            </AlertDescription>
-          </Alert>
-          <Link
-            href={ROUTES.LOGIN}
-            className={cn(buttonVariants({ variant: 'default' }), 'w-full')}
-          >
-            {REGISTER_COPY.PROCEED_TO_LOGIN_BUTTON}
-          </Link>
-        </CardContent>
-        <CardFooter className="flex justify-center text-sm text-muted-foreground">
-          <Link
-            href={ROUTES.LOGIN}
-            className="text-primary underline-offset-4 hover:underline font-medium"
-          >
-            {REGISTER_COPY.BACK_TO_LOGIN_LINK}
-          </Link>
-        </CardFooter>
-      </Card>
+    registerOrg(
+      {
+        orgName: data.orgName,
+        adminName: data.adminName,
+        adminEmail: data.adminEmail,
+        adminPassword: data.adminPassword,
+      },
+      {
+        onSuccess: () => {
+          router.push(
+            `${ROUTES.VERIFY_EMAIL}?email=${encodeURIComponent(data.adminEmail)}`,
+          );
+        },
+      },
     );
-  }
+  };
 
   const errorMessage =
     error?.response?.data?.error?.message ||

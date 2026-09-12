@@ -2,6 +2,13 @@ export const LOGIN_COPY = {
   TITLE: 'Log in to TrackIt',
   DESCRIPTION: 'Enter your email and password to access your dashboard',
   PENDING_APPROVAL_TITLE: 'Organization Pending Approval',
+  EMAIL_NOT_VERIFIED_TITLE: 'Email Not Verified',
+  EMAIL_NOT_VERIFIED_DESCRIPTION:
+    'Your email address has not been verified yet. Please enter the verification code sent to your email to continue.',
+  VERIFY_EMAIL_ACTION: 'Verify Email',
+  RESEND_CODE_ACTION: 'Resend Verification Code',
+  RESEND_CODE_PENDING: 'Resending...',
+  RESEND_SUCCESS_MESSAGE: 'Verification code resent. Please check your inbox.',
   LOGIN_FAILED_TITLE: 'Login Failed',
   GENERIC_ERROR: 'An error occurred while logging in. Please try again.',
   EMAIL_LABEL: 'Email',
@@ -40,5 +47,27 @@ export const REGISTER_COPY = {
   SUCCESS_ALERT_DESCRIPTION:
     'If your platform requires admin approval, your account will be activated once approved by a superadmin. Otherwise, you can log in right away.',
   PROCEED_TO_LOGIN_BUTTON: 'Proceed to Login',
+  BACK_TO_LOGIN_LINK: 'Back to Login',
+} as const;
+
+export const VERIFY_EMAIL_COPY = {
+  TITLE: 'Verify Your Email',
+  DESCRIPTION: 'Enter the 6-digit verification code sent to your email address',
+  VERIFICATION_FAILED_TITLE: 'Verification Failed',
+  GENERIC_ERROR: 'Verification failed. Please check your code and try again.',
+  EMAIL_LABEL: 'Email Address',
+  EMAIL_PLACEHOLDER: 'admin@apexauto.com',
+  OTP_LABEL: '6-Digit Verification Code',
+  OTP_PLACEHOLDER: '123456',
+  SUBMIT_BUTTON_PENDING: 'Verifying...',
+  SUBMIT_BUTTON: 'Verify Email',
+  RESEND_BUTTON: 'Resend Code',
+  RESEND_BUTTON_PENDING: 'Resending...',
+  RESEND_SUCCESS_MESSAGE: 'A new verification code has been sent to your email.',
+  SUCCESS_TITLE: 'Email Verified',
+  SUCCESS_DESCRIPTION:
+    'Your email address has been verified successfully. You can now log in to access your dashboard.',
+  PROCEED_TO_LOGIN_BUTTON: 'Proceed to Login',
+  FOOTER_PROMPT: 'Did not receive a code?',
   BACK_TO_LOGIN_LINK: 'Back to Login',
 } as const;
