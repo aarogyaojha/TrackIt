@@ -99,7 +99,7 @@ describe('Auth & Organizations Flow (e2e)', () => {
       'admin@apexauto.com',
     );
     expect(user).toBeDefined();
-    await usersRepository.updateById(user!._id, {
+    await usersRepository.updateById(user!._id.toString(), {
       $set: { emailVerified: true },
     });
   });

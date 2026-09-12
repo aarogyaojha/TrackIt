@@ -116,7 +116,7 @@ describe('Tickets Module (e2e)', () => {
       'alice@apexbikes.com',
     );
     expect(user).toBeDefined();
-    await usersRepository.updateById(user!._id, {
+    await usersRepository.updateById(user!._id.toString(), {
       $set: { emailVerified: true },
     });
   });
@@ -161,7 +161,7 @@ describe('Tickets Module (e2e)', () => {
       'bob@zenithtailors.com',
     );
     expect(user2).toBeDefined();
-    await usersRepository.updateById(user2!._id, {
+    await usersRepository.updateById(user2!._id.toString(), {
       $set: { emailVerified: true },
     });
 
@@ -380,7 +380,7 @@ describe('Tickets Module (e2e)', () => {
       'admin@limittest.com',
     );
     expect(limitUser).toBeDefined();
-    await usersRepository.updateById(limitUser!._id, {
+    await usersRepository.updateById(limitUser!._id.toString(), {
       $set: { emailVerified: true },
     });
 

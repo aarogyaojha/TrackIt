@@ -109,7 +109,7 @@ describe('Plans & Subscriptions (e2e)', () => {
       'bob@apexmotors.com',
     );
     expect(user).toBeDefined();
-    await usersRepository.updateById(user!._id, {
+    await usersRepository.updateById(user!._id.toString(), {
       $set: { emailVerified: true },
     });
   });

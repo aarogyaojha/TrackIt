@@ -120,7 +120,7 @@ describe('Superadmin & Platform Management (e2e)', () => {
       'alice@quickfix.com',
     );
     expect(user).toBeDefined();
-    await usersRepository.updateById(user!._id, {
+    await usersRepository.updateById(user!._id.toString(), {
       $set: { emailVerified: true },
     });
   });
@@ -265,7 +265,7 @@ describe('Superadmin & Platform Management (e2e)', () => {
       'reject@rejectme.com',
     );
     expect(rejectUser).toBeDefined();
-    await usersRepository.updateById(rejectUser!._id, {
+    await usersRepository.updateById(rejectUser!._id.toString(), {
       $set: { emailVerified: true },
     });
 
