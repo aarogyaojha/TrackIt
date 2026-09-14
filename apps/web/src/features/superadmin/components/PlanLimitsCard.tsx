@@ -40,6 +40,8 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
 
   const form = useForm<UpdatePlanLimitsFormData>({
     resolver: zodResolver(updatePlanLimitsSchema) as Resolver<UpdatePlanLimitsFormData>,
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       maxActiveTickets: plan.limits.maxActiveTickets,
       maxStaffUsers: plan.limits.maxStaffUsers,

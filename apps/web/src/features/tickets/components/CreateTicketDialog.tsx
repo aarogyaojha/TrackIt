@@ -44,6 +44,8 @@ export function CreateTicketDialog({
 
   const form = useForm<CreateTicketFormData>({
     resolver: zodResolver(createTicketSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       code: '',
       customerName: '',

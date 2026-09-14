@@ -57,6 +57,8 @@ export function VerifyEmailForm() {
 
   const form = useForm<VerifyEmailFormData>({
     resolver: zodResolver(verifyEmailSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       email: initialEmail,
       otp: '',
