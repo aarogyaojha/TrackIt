@@ -14,6 +14,9 @@
     "build": "tsc",
     "lint": "echo 'no linting needed'",
     "test": "echo 'no tests'"
+  },
+  "dependencies": {
+    "typescript": "^5.8.0"
   }
 }
 
