@@ -41,11 +41,17 @@ export const authSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
       state.isInitializing = false;
+      if (typeof document !== 'undefined') {
+        document.cookie = 'has_session=1; path=/; max-age=604800; SameSite=Lax';
+      }
     },
     clearSession: (state) => {
       state.accessToken = null;
       state.user = null;
       state.isInitializing = false;
+      if (typeof document !== 'undefined') {
+        document.cookie = 'has_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      }
     },
     setInitializing: (state, action: PayloadAction<boolean>) => {
       state.isInitializing = action.payload;

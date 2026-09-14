@@ -60,6 +60,9 @@ export function LoginForm() {
     setResendFeedback(null);
     login(data, {
       onSuccess: (res) => {
+        if (typeof document !== 'undefined') {
+          document.cookie = 'has_session=1; path=/; max-age=604800; SameSite=Lax';
+        }
         if (res.user?.role === Role.SUPERADMIN) {
           router.push(ROUTES.SUPERADMIN);
         } else {
