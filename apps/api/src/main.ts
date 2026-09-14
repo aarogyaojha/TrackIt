@@ -28,7 +28,9 @@ async function bootstrap() {
 
   app.setGlobalPrefix(API_PREFIX, { exclude: ['health'] });
 
-  setupSwagger(app);
+  if (!appConfigService.isProduction) {
+    setupSwagger(app);
+  }
 
   const port = appConfigService.port;
 
@@ -36,10 +38,12 @@ async function bootstrap() {
 
   const url = await app.getUrl();
   Logger.log(`Application is running on: ${url}`, 'Bootstrap');
-  Logger.log(
-    `Swagger documentation available at: ${url}/${SWAGGER_DEFAULTS.DOCS_PATH}`,
-    'Bootstrap',
-  );
+  if (!appConfigService.isProduction) {
+    Logger.log(
+      `Swagger documentation available at: ${url}/${SWAGGER_DEFAULTS.DOCS_PATH}`,
+      'Bootstrap',
+    );
+  }
 }
 
 bootstrap();
