@@ -50,6 +50,7 @@ export class AuthController {
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
       path: `/${API_PREFIX}/auth`,
+      partitioned: isProd,
     });
   }
 
@@ -73,6 +74,7 @@ export class AuthController {
       sameSite: isProd ? 'none' : 'lax',
       path: '/',
       maxAge: maxAgeMs,
+      partitioned: isProd,
     });
   }
 
@@ -86,12 +88,14 @@ export class AuthController {
       secure,
       sameSite,
       path: `/${API_PREFIX}/auth`,
+      partitioned: isProd,
     });
     res.clearCookie('has_session', {
       httpOnly: true,
       secure,
       sameSite,
       path: '/',
+      partitioned: isProd,
     });
   }
 
