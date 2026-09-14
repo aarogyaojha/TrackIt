@@ -37,6 +37,19 @@ export const ORGANIZATIONS_SWAGGER = {
 
 export const MAX_SLUG_RETRIES = 5;
 export const MIN_PASSWORD_LENGTH = 8;
+/**
+ * Bcrypt silently truncates passwords beyond 72 bytes. Setting a hard limit of 72
+ * prevents misleading users into believing characters beyond 72 are part of the secret.
+ */
+export const MAX_PASSWORD_LENGTH = 72;
+export const PASSWORD_PATTERN = /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+export const PASSWORD_PATTERN_MESSAGE =
+  'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+
+export const MIN_ORG_NAME_LENGTH = 2;
+export const MAX_ORG_NAME_LENGTH = 100;
+export const MIN_ADMIN_NAME_LENGTH = 2;
+export const MAX_ADMIN_NAME_LENGTH = 100;
 
 /**
  * Slugs reserved for internal top-level platform routes and endpoints.
