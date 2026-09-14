@@ -48,6 +48,18 @@ export const TICKETS_SWAGGER = {
   GET_PUBLIC_OK_DESCRIPTION: 'Public ticket details retrieved successfully.',
 } as const;
 
+export const MIN_CUSTOMER_NAME_LENGTH = 2;
+export const MAX_CUSTOMER_NAME_LENGTH = 100;
+export const MAX_ITEM_DESCRIPTION_LENGTH = 500;
+
+/**
+ * Permissive phone-shaped regex allowing digits, spaces, dashes, parentheses, and optional leading +.
+ * Manually synced with frontend create-ticket.schema.ts.
+ */
+export const PHONE_NUMBER_PATTERN = /^\+?[0-9\s\-()]{7,20}$/;
+export const PHONE_NUMBER_PATTERN_MESSAGE =
+  'Please enter a valid phone number (7-20 digits, spaces, dashes, or parentheses)';
+
 export const TICKETS_DTO_SWAGGER = {
   CODE_DESCRIPTION: 'Unique ticket identifier code within the organization',
   CODE_EXAMPLE: 'TICK-1001',
