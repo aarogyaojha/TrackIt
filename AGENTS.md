@@ -100,7 +100,7 @@ All env var access goes through `src/config/configuration.ts` + `AppConfigServic
 
 - Access tokens expire in 15m; refresh tokens expire in 7d with automatic rotation on each refresh request.
 - Refresh tokens are stored on the `User` document strictly as SHA-256 hashes (`refreshTokenHash`), never plaintext.
-- Refresh tokens are delivered and received via an `httpOnly`, `SameSite=Strict`, `Path=/auth` cookie (`secure: true` in production). Access tokens are returned directly in the response body.
+- Refresh tokens are delivered and received via an `httpOnly`, `SameSite=None` (`secure: true`) cookie in production and `SameSite=Lax` in development, scoped to `Path=/api/v1/auth`. Access tokens are returned directly in the response body.
 - `JwtAuthGuard` is registered globally as `APP_GUARD` in `AppModule`. All routes are protected by default; public endpoints (e.g. `/auth/login`, `/auth/refresh`, `/organizations/register`, `/health`) must be explicitly annotated with `@Public()`.
 - `RolesGuard` is registered globally as `APP_GUARD` in `AppModule` following `JwtAuthGuard`. Role checks are opt-in via `@Roles(Role.XYZ)` (same shape as `@Public()`); use `@SuperAdminOnly()` as the standard alias decorator to gate a superadmin-only route.
 - `TenantGuard` verifies that the authenticated caller (`req.user`) has an active `organizationId`. It blocks platform `SUPERADMIN` (or any context lacking an organization scope) from hitting tenant-scoped routes without explicit tenant context, and ensures tenant scoping for downstream operations.

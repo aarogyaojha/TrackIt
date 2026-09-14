@@ -44,10 +44,11 @@ export class AuthController {
   ) {}
 
   private setRefreshTokenCookie(res: Response, refreshToken: string): void {
+    const isProd = this.appConfigService.isProduction;
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: this.appConfigService.isProduction,
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       path: `/${API_PREFIX}/auth`,
     });
   }
@@ -64,21 +65,32 @@ export class AuthController {
    * The API's own guards and JWT validations remain the real security boundary for all protected actions.
    */
   private setSessionPresenceCookie(res: Response): void {
+    const isProd = this.appConfigService.isProduction;
     const maxAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 days matching JWT refresh token lifetime
     res.cookie('has_session', '1', {
       httpOnly: true,
-      secure: this.appConfigService.isProduction,
-      sameSite: 'strict',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
       path: '/',
       maxAge: maxAgeMs,
     });
   }
 
   private clearAuthCookies(res: Response): void {
+    const isProd = this.appConfigService.isProduction;
+    const secure = isProd;
+    const sameSite = isProd ? ('none' as const) : ('lax' as const);
+
     res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure,
+      sameSite,
       path: `/${API_PREFIX}/auth`,
     });
     res.clearCookie('has_session', {
+      httpOnly: true,
+      secure,
+      sameSite,
       path: '/',
     });
   }
