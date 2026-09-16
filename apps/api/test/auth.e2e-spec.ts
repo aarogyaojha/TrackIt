@@ -104,6 +104,44 @@ describe('Auth & Organizations Flow (e2e)', () => {
     });
   });
 
+  it(`POST /${API_PREFIX}/organizations/register — rejects registration with 400 VALIDATION_ERROR when password lacks complexity`, async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/register`)
+      .send({
+        orgName: 'Valid Org Name',
+        adminName: 'Valid Admin',
+        adminEmail: 'valid@example.com',
+        adminPassword: 'alllowercase',
+      })
+      .expect(400);
+
+    expect(res.body).toMatchObject({
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+      },
+    });
+  });
+
+  it(`POST /${API_PREFIX}/organizations/register — rejects registration with 400 VALIDATION_ERROR when orgName is whitespace-only`, async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/organizations/register`)
+      .send({
+        orgName: '   ',
+        adminName: 'Valid Admin',
+        adminEmail: 'valid2@example.com',
+        adminPassword: 'Password123!',
+      })
+      .expect(400);
+
+    expect(res.body).toMatchObject({
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+      },
+    });
+  });
+
   it(`POST /${API_PREFIX}/auth/login — rejects login with 403 ORG_NOT_APPROVED when organization is pending approval`, async () => {
     const pendingLoginRes = await request(app.getHttpServer())
       .post(`/${API_PREFIX}/auth/login`)

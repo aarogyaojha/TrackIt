@@ -227,6 +227,26 @@ describe('Tickets Module (e2e)', () => {
     expect(res.body.error.code).toBe(ErrorCode.TICKET_CODE_TAKEN);
   });
 
+  it(`POST /${API_PREFIX}/tickets — returns 400 VALIDATION_ERROR on malformed customerPhone`, async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/tickets`)
+      .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+      .send({
+        code: 'TICK-PHONE-INVALID',
+        customerName: 'John Doe',
+        customerPhone: 'abc',
+        itemDescription: 'Mountain Bike Tune-up',
+      })
+      .expect(400);
+
+    expect(res.body).toMatchObject({
+      success: false,
+      error: {
+        code: ErrorCode.VALIDATION_ERROR,
+      },
+    });
+  });
+
   it(`PATCH /${API_PREFIX}/tickets/:id/status — full valid lifecycle RECEIVED -> IN_PROGRESS -> READY -> DELIVERED`, async () => {
     // 1. RECEIVED -> IN_PROGRESS
     const inProgressRes = await request(app.getHttpServer())
