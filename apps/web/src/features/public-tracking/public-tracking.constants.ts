@@ -17,6 +17,7 @@ export const PUBLIC_TRACKING_COPY = {
   CUSTOMER_LABEL: 'Customer',
   ITEM_LABEL: 'Item Description',
   CREATED_LABEL: 'Created',
+  DETAILS_TITLE: 'Service Details',
   STATUS_TIMELINE_TITLE: 'Status History',
   TIMELINE_EMPTY: 'No history records available.',
   FOOTER_ATTRIBUTION_PREFIX: 'Powered by',
@@ -33,4 +34,25 @@ export const PUBLIC_TRACKING_COPY = {
     'You have made too many requests in a short period. Please wait a moment before trying again.',
   LOADING_TITLE: 'Loading ticket status...',
   LIVE_UPDATE_BADGE: 'Live Tracking',
+} as const;
+
+export const ORG_PORTAL_COPY = {
+  BADGE: 'Live Status Portal',
+  SUBHEADING: 'Track your item and service progress in real time.',
+  SEARCH_CARD_TITLE: 'Track Your Item',
+  SEARCH_CARD_DESC: 'Enter your Ticket Code or phone number to view live status.',
+  INPUT_LABEL: 'Ticket Code or Phone Number',
+  INPUT_PLACEHOLDER: 'e.g. TK-AB12CD or 555-0199',
+  SEARCH_BUTTON: 'Track Status',
+  SEARCHING_BUTTON: 'Searching...',
+  HINT: 'Your ticket code is printed on your receipt or was provided by staff upon check-in.',
+  DIRECT_LINK_LABEL: 'Shareable Ticket Link',
+  COPY_LINK_BUTTON: 'Copy Link',
+  LINK_COPIED: 'Link copied to clipboard',
+  VIEW_DIRECT_PAGE: 'Open Dedicated Tracking Page',
+  NOT_FOUND_TITLE: 'No Tickets Found',
+  NOT_FOUND_DESC: 'We could not find an active ticket matching that code or phone number. Please check your details or contact the business.',
+  MULTIPLE_RESULTS_TITLE: 'Matching Tickets',
+  MULTIPLE_RESULTS_DESC: 'We found multiple tickets matching your search. Select one to view its status:',
+  VIEW_STATUS_BUTTON: 'View Status',
 } as const;

@@ -52,7 +52,13 @@ export function PublicTicketView({ ticket }: PublicTicketViewProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <TicketStatusStepper status={ticket.status} />
+          <TicketStatusStepper
+            status={ticket.status}
+            category={ticket.category || ticket.statusCategory}
+            customerLabel={ticket.customerLabel}
+            stages={ticket.stages}
+            workflow={ticket.workflow}
+          />
         </CardContent>
       </Card>
 
@@ -60,7 +66,7 @@ export function PublicTicketView({ ticket }: PublicTicketViewProps) {
       <Card className="shadow-sm">
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold">
-            Service Details
+            {PUBLIC_TRACKING_COPY.DETAILS_TITLE}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -121,7 +127,10 @@ export function PublicTicketView({ ticket }: PublicTicketViewProps) {
                     <div className="absolute -left-6 top-1.5 size-2.5 rounded-full bg-primary ring-4 ring-background" />
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
                       <div className="flex items-center gap-2">
-                        <StatusBadge status={item.status} />
+                        <StatusBadge
+                          status={item.status || ''}
+                          label={item.customerLabel}
+                        />
                       </div>
                       <span className="text-xs text-muted-foreground">
                         {timeString}

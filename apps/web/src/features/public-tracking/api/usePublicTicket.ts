@@ -1,19 +1,17 @@
-import axios from 'axios';
 import { useQuery } from '@tanstack/react-query';
-import { TicketStatus } from '@trackit/types';
+import { StatusCategory, TicketStatus } from '@trackit/types';
+import { publicApi } from '@/lib/api/public-client';
+import { WorkflowDetail } from '@/features/workflows/api/types';
 
-// Standalone unauthenticated Axios client for public tracking routes.
-// Intentionally isolated from the shared apiClient (lib/api/client.ts) to guarantee
-// no credentials, access tokens, or refresh interceptors are ever attached.
-const publicApi = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/v1`,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+export interface PublicTicketStage {
+  customerLabel: string;
+  customerDescription?: string;
+  category: StatusCategory;
+}
 
 export interface PublicTicketStatusHistory {
-  status: TicketStatus;
+  customerLabel?: string;
+  status?: TicketStatus | string;
   changedAt: string;
 }
 
@@ -22,8 +20,14 @@ export interface PublicTicketData {
   code: string;
   customerName: string;
   itemDescription: string;
-  status: TicketStatus;
+  customerLabel?: string;
+  customerDescription?: string;
+  category?: StatusCategory;
+  status?: TicketStatus | string;
+  statusCategory?: StatusCategory;
+  stages?: PublicTicketStage[];
   statusHistory: PublicTicketStatusHistory[];
+  workflow?: WorkflowDetail;
   createdAt?: string;
 }
 
