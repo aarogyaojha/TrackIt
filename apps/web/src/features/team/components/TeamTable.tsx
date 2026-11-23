@@ -11,12 +11,14 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Role, UserResponse } from '@trackit/types';
+import { Role, RoleResponse, UserResponse } from '@trackit/types';
 import { Edit2Icon, Trash2Icon } from 'lucide-react';
 import { TEAM_COPY } from '../team.constants';
+import { formatRoleName } from '@/lib/utils';
 
 interface TeamTableProps {
   members: UserResponse[];
+  roles?: RoleResponse[];
   currentUserId?: string;
   onEdit: (member: UserResponse) => void;
   onDelete: (member: UserResponse) => void;
@@ -24,6 +26,7 @@ interface TeamTableProps {
 
 export function TeamTable({
   members,
+  roles,
   currentUserId,
   onEdit,
   onDelete,
@@ -79,7 +82,7 @@ export function TeamTable({
                     variant={isAdmin ? 'default' : 'secondary'}
                     className="text-xs"
                   >
-                    {member.role}
+                    {formatRoleName(member.role, roles)}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -135,3 +138,4 @@ export function TeamTable({
     </div>
   );
 }
+

@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { APP_NAME } from '@/constants/app.constants';
 import { DashboardNav, NavItem } from '@/components/dashboard-nav/DashboardNav';
 import { DASHBOARD_COPY } from '../dashboard.constants';
+import { formatRoleName } from '@/lib/utils';
 
 export interface DashboardShellProps {
   user: AuthUser | null;
@@ -87,8 +88,8 @@ export function DashboardShell({
             {user && (
               <div className="text-sm text-right">
                 <p className="font-medium text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {user.role}
+                <p className="text-xs text-muted-foreground">
+                  {formatRoleName(user.role)}
                 </p>
               </div>
             )}
@@ -153,8 +154,8 @@ export function DashboardShell({
               {user && (
                 <div className="text-sm px-1">
                   <p className="font-semibold text-foreground">{user.name}</p>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {user.role}
+                  <p className="text-xs text-muted-foreground">
+                    {formatRoleName(user.role)}
                   </p>
                 </div>
               )}

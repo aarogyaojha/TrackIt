@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { PlusIcon } from 'lucide-react';
 import { UserResponse } from '@trackit/types';
 import { useTeamMembers } from '@/features/team/api/useTeamMembers';
+import { useRoles } from '@/features/roles/api/useRoles';
 import { useSubscriptionUsage } from '@/features/subscription/api/useSubscriptionUsage';
 import { TeamTable } from '@/features/team/components/TeamTable';
 import { AddTeamMemberDialog } from '@/features/team/components/AddTeamMemberDialog';
@@ -18,6 +19,7 @@ import { useAppSelector } from '@/lib/redux/hooks';
 export default function TeamPage() {
   const currentUser = useAppSelector((state) => state.auth.user);
   const { data: members, isLoading } = useTeamMembers();
+  const { data: roles } = useRoles();
   const { data: subscription } = useSubscriptionUsage();
 
   const [addOpen, setAddOpen] = React.useState(false);
@@ -81,6 +83,7 @@ export default function TeamPage() {
 
       <TeamTable
         members={members || []}
+        roles={roles}
         currentUserId={currentUser?.id}
         onEdit={handleEdit}
         onDelete={handleDelete}
@@ -103,3 +106,4 @@ export default function TeamPage() {
     </div>
   );
 }
+

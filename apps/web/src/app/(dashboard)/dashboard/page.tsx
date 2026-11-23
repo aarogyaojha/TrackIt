@@ -10,6 +10,7 @@ import { CreateTicketDialog } from '@/features/tickets/components/CreateTicketDi
 import { TICKETS_LIST_COPY } from '@/features/tickets/tickets.constants';
 import { UsageSummary } from '@/features/subscription/components/UsageSummary';
 import { CounterQrCard } from '@/features/dashboard/components/CounterQrCard';
+import { formatRoleName } from '@/lib/utils';
 
 export default function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user);
@@ -28,7 +29,7 @@ export default function DashboardPage() {
               <span className="font-semibold text-foreground">
                 {user?.name || DASHBOARD_COPY.DEFAULT_USER_NAME}
               </span>{' '}
-              (<span className="font-medium text-foreground">{user?.role}</span>)
+              (<span className="font-medium text-foreground">{formatRoleName(user?.role)}</span>)
             </p>
           </div>
 

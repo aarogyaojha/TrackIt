@@ -151,7 +151,7 @@ function AddTeamMemberInner({ onSuccess, onCancel }: AddTeamMemberInnerProps) {
           <SelectContent>
             {assignableRoles.map((r) => (
               <SelectItem key={r.key} value={r.key}>
-                {r.name} ({r.key})
+                {r.name}
               </SelectItem>
             ))}
           </SelectContent>
