@@ -29,6 +29,7 @@ export const createTicketSchema = z.object({
     .trim()
     .min(1, 'Item description is required')
     .max(500, 'Item description must be at most 500 characters'),
+  workflowId: z.string().optional(),
 });
 
 export type CreateTicketFormData = z.infer<typeof createTicketSchema>;

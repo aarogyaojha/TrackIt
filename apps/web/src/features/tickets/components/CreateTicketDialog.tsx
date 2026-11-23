@@ -22,8 +22,16 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { ErrorCode } from '@/constants/error-codes';
 import { ErrorMessages } from '@/constants/error-messages';
+import { useWorkflows } from '@/features/workflows/api/useWorkflows';
 import { useCreateTicket } from '../api/useCreateTicket';
 import {
   CreateTicketFormData,
@@ -41,6 +49,7 @@ export function CreateTicketDialog({
   onOpenChange,
 }: CreateTicketDialogProps) {
   const { mutate: createTicket, isPending } = useCreateTicket();
+  const { data: workflows } = useWorkflows(true);
 
   const form = useForm<CreateTicketFormData>({
     resolver: zodResolver(createTicketSchema),
@@ -51,6 +60,7 @@ export function CreateTicketDialog({
       customerName: '',
       customerPhone: '',
       itemDescription: '',
+      workflowId: undefined,
     },
   });
 
@@ -179,6 +189,41 @@ export function CreateTicketDialog({
                 </FormItem>
               )}
             />
+
+            {workflows && workflows.length > 1 && (
+              <FormField
+                control={form.control}
+                name="workflowId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{CREATE_TICKET_COPY.WORKFLOW_LABEL}</FormLabel>
+                    <Select
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={CREATE_TICKET_COPY.WORKFLOW_PLACEHOLDER}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {workflows.map((wf) => (
+                          <SelectItem key={wf.id} value={wf.id}>
+                            {wf.name}{' '}
+                            {wf.isDefault
+                              ? CREATE_TICKET_COPY.DEFAULT_WORKFLOW_SUFFIX
+                              : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter className="pt-2">
               <Button

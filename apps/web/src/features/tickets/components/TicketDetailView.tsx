@@ -17,6 +17,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { TicketStatus } from '@trackit/types';
 import { Ticket } from '../api/types';
 import {
   TICKET_DETAIL_COPY,
@@ -45,9 +46,9 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
 
   const formattedCreated = ticket.createdAt
     ? new Date(ticket.createdAt).toLocaleString(undefined, {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      })
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    })
     : '—';
 
   return (
@@ -117,6 +118,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 <StatusUpdateControl
                   ticketId={ticket.id}
                   currentStatus={ticket.status}
+                  workflowId={ticket.workflowId}
                 />
               </div>
             </CardContent>
@@ -141,6 +143,16 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                       },
                     );
 
+                    const statusLabel =
+                      TICKET_STATUS_LABELS[item.status as TicketStatus] ||
+                      item.status
+                        .split('_')
+                        .map(
+                          (w) =>
+                            w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(),
+                        )
+                        .join(' ');
+
                     return (
                       <div key={index} className="relative">
                         <div className="absolute -left-6 top-1.5 size-2.5 rounded-full bg-primary ring-4 ring-background" />
@@ -148,7 +160,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                           <div className="flex items-center gap-2">
                             <StatusBadge status={item.status} />
                             <span className="text-sm font-medium text-foreground">
-                              {TICKET_STATUS_LABELS[item.status]}
+                              {statusLabel}
                             </span>
                           </div>
                           <span className="text-xs text-muted-foreground">
