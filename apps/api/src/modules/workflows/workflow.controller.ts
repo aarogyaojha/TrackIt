@@ -19,13 +19,13 @@ import {
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
-import { Role } from '@trackit/types';
+import { Permission } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { ErrorCode } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { CurrentOrg } from '../auth/decorators/current-org.decorator';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
@@ -46,7 +46,7 @@ export class WorkflowsController {
   constructor(private readonly workflowsService: WorkflowsService) {}
 
   @Post()
-  @Roles(Role.ORG_ADMIN)
+  @RequirePermissions(Permission.WORKFLOWS_CREATE)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: WORKFLOWS_SWAGGER.CREATE_SUMMARY,
@@ -70,7 +70,7 @@ export class WorkflowsController {
   }
 
   @Get()
-  @Roles(Role.ORG_ADMIN, Role.ORG_STAFF)
+  @RequirePermissions(Permission.WORKFLOWS_READ)
   @ApiOperation({
     summary: WORKFLOWS_SWAGGER.LIST_SUMMARY,
     description: WORKFLOWS_SWAGGER.LIST_DESCRIPTION,
@@ -98,7 +98,7 @@ export class WorkflowsController {
   }
 
   @Get(':id')
-  @Roles(Role.ORG_ADMIN, Role.ORG_STAFF)
+  @RequirePermissions(Permission.WORKFLOWS_READ)
   @ApiOperation({
     summary: WORKFLOWS_SWAGGER.GET_BY_ID_SUMMARY,
     description: WORKFLOWS_SWAGGER.GET_BY_ID_DESCRIPTION,
@@ -120,7 +120,7 @@ export class WorkflowsController {
   }
 
   @Patch(':id')
-  @Roles(Role.ORG_ADMIN)
+  @RequirePermissions(Permission.WORKFLOWS_UPDATE)
   @ApiOperation({
     summary: WORKFLOWS_SWAGGER.UPDATE_SUMMARY,
     description: WORKFLOWS_SWAGGER.UPDATE_DESCRIPTION,
@@ -145,7 +145,7 @@ export class WorkflowsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ORG_ADMIN)
+  @RequirePermissions(Permission.WORKFLOWS_DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: WORKFLOWS_SWAGGER.DELETE_SUMMARY,
@@ -167,4 +167,3 @@ export class WorkflowsController {
     await this.workflowsService.delete(orgId, id);
   }
 }
-

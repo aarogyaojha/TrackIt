@@ -18,12 +18,14 @@ import { AppConfigModule } from './config/app-config.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from './modules/auth/guards/permissions.guard';
 import { RolesGuard } from './modules/auth/guards/roles.guard';
 import { EmailModule } from './modules/email/email.module';
 import { HealthModule } from './modules/health/health.module';
 import { OrganizationsModule } from './modules/organizations/organization.module';
 import { PlansModule } from './modules/plans/plan.module';
 import { PlatformSettingsModule } from './modules/platform-settings/platform-settings.module';
+import { RolesModule } from './modules/roles/role.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscription.module';
 import { TicketsModule } from './modules/tickets/ticket.module';
 import { UsersModule } from './modules/users/user.module';
@@ -52,6 +54,7 @@ import { WorkflowsModule } from './modules/workflows/workflow.module';
     AppConfigModule,
     DatabaseModule,
     UsersModule,
+    RolesModule,
     PlatformSettingsModule,
     PlansModule,
     SubscriptionsModule,
@@ -84,6 +87,10 @@ import { WorkflowsModule } from './modules/workflows/workflow.module';
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
     },
   ],
 })

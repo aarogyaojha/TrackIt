@@ -82,5 +82,29 @@ export class UsersRepository extends BaseRepository<UserDocument> {
   ): Promise<number> {
     return this.model.countDocuments({ organizationId }).exec();
   }
-}
 
+  async countByRole(role: string): Promise<number> {
+    return this.model.countDocuments({ role }).exec();
+  }
+
+  async countAdminsInOrg(
+    organizationId: string | Types.ObjectId,
+  ): Promise<number> {
+    return this.model
+      .countDocuments({
+        organizationId,
+        role: 'ORG_ADMIN',
+        isActive: true,
+      })
+      .exec();
+  }
+
+  async findByOrganization(
+    organizationId: string | Types.ObjectId,
+  ): Promise<UserDocument[]> {
+    return this.model
+      .find({ organizationId })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+}

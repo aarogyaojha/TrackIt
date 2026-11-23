@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as React from 'react';
@@ -13,6 +13,10 @@ import {
 } from '../auth/auth.constants';
 import { EmailService } from '../email/email.service';
 import { OtpVerificationTemplate } from '../email/templates/otp-verification.template';
+import { RolesService } from '../roles/role.service';
+import { SubscriptionsService } from '../subscriptions/subscription.service';
+import { CreateStaffUserDto } from './dto/create-staff-user.dto';
+import { UpdateStaffUserDto } from './dto/update-staff-user.dto';
 import { UsersRepository } from './user.repository';
 import { User, UserDocument } from './user.schema';
 import { SALT_ROUNDS } from './users.constants';
@@ -21,7 +25,7 @@ export interface CreateUserDto {
   email: string;
   password: string;
   name: string;
-  role: Role;
+  role: Role | string;
   organizationId?: Types.ObjectId | string | null;
   isActive?: boolean;
 }
@@ -31,6 +35,10 @@ export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
+    @Inject(forwardRef(() => RolesService))
+    private readonly rolesService: RolesService,
+    @Inject(forwardRef(() => SubscriptionsService))
+    private readonly subscriptionsService: SubscriptionsService,
   ) {}
 
   private hashOtp(otp: string): string {
@@ -184,5 +192,175 @@ export class UsersService {
       user.email,
       user.name,
     );
+  }
+
+  async listStaffByOrganization(organizationId: string): Promise<UserDocument[]> {
+    return this.usersRepository.findByOrganization(organizationId);
+  }
+
+  async createStaffUser(
+    organizationId: string,
+    dto: CreateStaffUserDto,
+  ): Promise<UserDocument> {
+    if (dto.role === Role.SUPERADMIN || dto.role === 'SUPERADMIN') {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.FORBIDDEN,
+        'Cannot assign platform superadmin role to organization staff',
+      );
+    }
+
+    const existingUser = await this.usersRepository.findByEmailWithPassword(dto.email);
+    if (existingUser) {
+      throw new AppException(
+        HttpStatus.CONFLICT,
+        ErrorCode.CONFLICT,
+        'A user with this email address already exists',
+      );
+    }
+
+    // Validate role exists
+    if (dto.role !== Role.ORG_ADMIN && dto.role !== Role.ORG_STAFF) {
+      const roleDoc = await this.rolesService.getRoleByKey(dto.role);
+      if (!roleDoc) {
+        throw new AppException(
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.ROLE_NOT_FOUND,
+          ErrorMessages[ErrorCode.ROLE_NOT_FOUND],
+        );
+      }
+    }
+
+    // Check plan limits
+    const currentStaffCount = await this.usersRepository.countByOrganizationId(organizationId);
+    await this.subscriptionsService.assertPlanLimit(
+      organizationId,
+      'maxStaffUsers',
+      currentStaffCount,
+    );
+
+    const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+
+    return this.usersRepository.create({
+      email: dto.email.toLowerCase(),
+      passwordHash,
+      name: dto.name.trim(),
+      role: dto.role,
+      organizationId: new Types.ObjectId(organizationId),
+      isActive: true,
+      emailVerified: true,
+    });
+  }
+
+  async updateStaffUser(
+    organizationId: string,
+    userId: string,
+    requestingUserId: string,
+    dto: UpdateStaffUserDto,
+  ): Promise<UserDocument> {
+    const user = await this.usersRepository.findById(userId);
+    if (!user || user.organizationId?.toString() !== organizationId) {
+      throw new AppException(
+        HttpStatus.NOT_FOUND,
+        ErrorCode.USER_NOT_FOUND,
+        ErrorMessages[ErrorCode.USER_NOT_FOUND],
+      );
+    }
+
+    if (dto.role && (dto.role === Role.SUPERADMIN || dto.role === 'SUPERADMIN')) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.FORBIDDEN,
+        'Cannot assign platform superadmin role to organization staff',
+      );
+    }
+
+    if (dto.role && dto.role !== Role.ORG_ADMIN && dto.role !== Role.ORG_STAFF) {
+      const roleDoc = await this.rolesService.getRoleByKey(dto.role);
+      if (!roleDoc) {
+        throw new AppException(
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.ROLE_NOT_FOUND,
+          ErrorMessages[ErrorCode.ROLE_NOT_FOUND],
+        );
+      }
+    }
+
+    // Prevent deactivating own account
+    if (dto.isActive === false && userId === requestingUserId) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        ErrorCode.CANNOT_DELETE_SELF,
+        ErrorMessages[ErrorCode.CANNOT_DELETE_SELF],
+      );
+    }
+
+    // If changing role away from ORG_ADMIN or deactivating, verify there's another active admin
+    if (
+      user.role === Role.ORG_ADMIN &&
+      ((dto.role && dto.role !== Role.ORG_ADMIN) || dto.isActive === false)
+    ) {
+      const adminCount = await this.usersRepository.countAdminsInOrg(organizationId);
+      if (adminCount <= 1) {
+        throw new AppException(
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.CANNOT_REMOVE_LAST_ADMIN,
+          ErrorMessages[ErrorCode.CANNOT_REMOVE_LAST_ADMIN],
+        );
+      }
+    }
+
+    const updatePayload: Partial<User> = {};
+    if (dto.name !== undefined) {
+      updatePayload.name = dto.name.trim();
+    }
+    if (dto.role !== undefined) {
+      updatePayload.role = dto.role;
+    }
+    if (dto.isActive !== undefined) {
+      updatePayload.isActive = dto.isActive;
+    }
+
+    const updated = await this.usersRepository.updateById(userId, {
+      $set: updatePayload,
+    });
+
+    return updated!;
+  }
+
+  async deleteStaffUser(
+    organizationId: string,
+    userId: string,
+    requestingUserId: string,
+  ): Promise<void> {
+    if (userId === requestingUserId) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        ErrorCode.CANNOT_DELETE_SELF,
+        ErrorMessages[ErrorCode.CANNOT_DELETE_SELF],
+      );
+    }
+
+    const user = await this.usersRepository.findById(userId);
+    if (!user || user.organizationId?.toString() !== organizationId) {
+      throw new AppException(
+        HttpStatus.NOT_FOUND,
+        ErrorCode.USER_NOT_FOUND,
+        ErrorMessages[ErrorCode.USER_NOT_FOUND],
+      );
+    }
+
+    if (user.role === Role.ORG_ADMIN) {
+      const adminCount = await this.usersRepository.countAdminsInOrg(organizationId);
+      if (adminCount <= 1) {
+        throw new AppException(
+          HttpStatus.BAD_REQUEST,
+          ErrorCode.CANNOT_REMOVE_LAST_ADMIN,
+          ErrorMessages[ErrorCode.CANNOT_REMOVE_LAST_ADMIN],
+        );
+      }
+    }
+
+    await this.usersRepository.deleteById(userId);
   }
 }

@@ -17,6 +17,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { Permission } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -27,6 +28,7 @@ import {
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { CurrentOrg } from '../auth/decorators/current-org.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { SuperAdminOnly } from '../auth/decorators/super-admin-only.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
@@ -67,9 +69,9 @@ export class OrganizationsController {
     };
   }
 
-
   @Get('me')
   @UseGuards(TenantGuard)
+  @RequirePermissions(Permission.ORG_READ)
   @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
   @ApiOperation({
     summary: ORGANIZATIONS_SWAGGER.GET_ME_SUMMARY,
@@ -98,6 +100,7 @@ export class OrganizationsController {
 
   @Get('me/check-in-qr')
   @UseGuards(TenantGuard)
+  @RequirePermissions(Permission.ORG_QR_VIEW)
   @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
   @ApiOperation({
     summary: ORGANIZATIONS_SWAGGER.GET_CHECK_IN_QR_SUMMARY,

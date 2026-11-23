@@ -28,12 +28,14 @@ describe('toUserResponse', () => {
       name: 'John Doe',
       role: Role.ORG_ADMIN,
       organizationId: rawOrgId.toString(),
+      isActive: true,
     });
 
     const keys = Object.keys(result).sort();
     expect(keys).toEqual([
       'email',
       'id',
+      'isActive',
       'name',
       'organizationId',
       'role',
@@ -42,7 +44,6 @@ describe('toUserResponse', () => {
     expect('__v' in result).toBe(false);
     expect('passwordHash' in result).toBe(false);
     expect('refreshTokenHash' in result).toBe(false);
-    expect('isActive' in result).toBe(false);
   });
 
   it('handles null organizationId correctly for superadmin users', () => {
@@ -54,6 +55,7 @@ describe('toUserResponse', () => {
       name: 'Super Admin',
       role: Role.SUPERADMIN,
       organizationId: null,
+      isActive: true,
       __v: 0,
       passwordHash: 'sensitive-password-hash',
       refreshTokenHash: 'sensitive-refresh-token-hash',
@@ -67,6 +69,7 @@ describe('toUserResponse', () => {
       name: 'Super Admin',
       role: Role.SUPERADMIN,
       organizationId: null,
+      isActive: true,
     });
     expect('_id' in result).toBe(false);
     expect('__v' in result).toBe(false);

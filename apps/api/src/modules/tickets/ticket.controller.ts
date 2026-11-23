@@ -17,6 +17,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Permission } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -25,6 +26,7 @@ import { ErrorCode, ErrorMessages } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { CurrentOrg } from '../auth/decorators/current-org.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import { OrganizationsService } from '../organizations/organization.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
@@ -47,6 +49,7 @@ export class TicketsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @RequirePermissions(Permission.TICKETS_CREATE)
   @ApiOperation({
     summary: TICKETS_SWAGGER.CREATE_SUMMARY,
     description: TICKETS_SWAGGER.CREATE_DESCRIPTION,
@@ -79,6 +82,7 @@ export class TicketsController {
   }
 
   @Get()
+  @RequirePermissions(Permission.TICKETS_READ)
   @ApiOperation({
     summary: TICKETS_SWAGGER.LIST_SUMMARY,
     description: TICKETS_SWAGGER.LIST_DESCRIPTION,
@@ -127,6 +131,7 @@ export class TicketsController {
   }
 
   @Get(':id')
+  @RequirePermissions(Permission.TICKETS_READ)
   @ApiOperation({
     summary: TICKETS_SWAGGER.GET_BY_ID_SUMMARY,
     description: TICKETS_SWAGGER.GET_BY_ID_DESCRIPTION,
@@ -158,6 +163,7 @@ export class TicketsController {
   }
 
   @Patch(':id/status')
+  @RequirePermissions(Permission.TICKETS_UPDATE_STATUS)
   @ApiOperation({
     summary: TICKETS_SWAGGER.UPDATE_STATUS_SUMMARY,
     description: TICKETS_SWAGGER.UPDATE_STATUS_DESCRIPTION,

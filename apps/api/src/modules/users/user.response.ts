@@ -5,8 +5,10 @@ export interface UserResponse {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: Role | string;
   organizationId: string | null;
+  isActive: boolean;
+  createdAt?: string;
 }
 
 /**
@@ -14,7 +16,7 @@ export interface UserResponse {
  * NEVER include passwordHash or refreshTokenHash in this mapper or in any user-facing response.
  */
 export function toUserResponse(user: UserDocument): UserResponse {
-  return {
+  const response: UserResponse = {
     id: user._id.toString(),
     email: user.email,
     name: user.name,
@@ -22,5 +24,12 @@ export function toUserResponse(user: UserDocument): UserResponse {
     organizationId: user.organizationId
       ? user.organizationId.toString()
       : null,
+    isActive: user.isActive !== undefined ? user.isActive : true,
   };
+
+  if (user.createdAt) {
+    response.createdAt = user.createdAt.toISOString();
+  }
+
+  return response;
 }

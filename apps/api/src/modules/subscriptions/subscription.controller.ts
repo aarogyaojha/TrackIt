@@ -13,11 +13,13 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { Permission } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { ErrorCode } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
 import { CurrentOrg } from '../auth/decorators/current-org.decorator';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { SuperAdminOnly } from '../auth/decorators/super-admin-only.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import { ChangeSubscriptionTierDto } from './dto/change-subscription-tier.dto';
@@ -33,6 +35,7 @@ export class SubscriptionsController {
 
   @Get('me/subscription')
   @UseGuards(TenantGuard)
+  @RequirePermissions(Permission.SUBSCRIPTION_READ)
   @ApiOperation({
     summary: SUBSCRIPTIONS_SWAGGER.GET_ME_SUMMARY,
     description: SUBSCRIPTIONS_SWAGGER.GET_ME_DESCRIPTION,

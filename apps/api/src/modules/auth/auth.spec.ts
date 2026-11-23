@@ -257,6 +257,7 @@ describe('AuthService', () => {
         name: 'John Doe',
         role: Role.ORG_ADMIN,
         organizationId: orgId.toString(),
+        isActive: true,
       });
 
       const expectedHash = crypto

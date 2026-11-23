@@ -37,10 +37,10 @@ export class User {
 
   @Prop({
     type: String,
-    enum: Role,
     required: true,
+    trim: true,
   })
-  role: Role;
+  role: string;
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
