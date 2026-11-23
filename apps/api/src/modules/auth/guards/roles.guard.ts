@@ -34,6 +34,11 @@ export class RolesGuard implements CanActivate {
       );
     }
 
+    // Superadmin bypasses platform role restrictions
+    if (user.role === Role.SUPERADMIN || user.role === 'SUPERADMIN') {
+      return true;
+    }
+
     const hasRole = requiredRoles.includes(user.role as Role);
     if (!hasRole) {
       throw new AppException(

@@ -1,12 +1,12 @@
-import { ErrorCode, ErrorCodeType } from './error-codes';
+import { ErrorCode } from './error-codes';
 
-export const ErrorMessages: Record<ErrorCodeType, string> = {
-  [ErrorCode.VALIDATION_ERROR]: 'Validation failed for request parameters',
-  [ErrorCode.NOT_FOUND]: 'The requested resource was not found',
-  [ErrorCode.UNAUTHORIZED]: 'Unauthorized access',
-  [ErrorCode.FORBIDDEN]: 'Forbidden access to this resource',
+export const ErrorMessages: Record<ErrorCode, string> = {
+  [ErrorCode.VALIDATION_ERROR]: 'Validation failed for the request payload.',
+  [ErrorCode.NOT_FOUND]: 'The requested resource was not found.',
+  [ErrorCode.UNAUTHORIZED]: 'Authentication is required to access this resource.',
+  [ErrorCode.FORBIDDEN]: 'You do not have permission to access this resource.',
   [ErrorCode.CONFLICT]: 'Resource conflict detected',
-  [ErrorCode.INTERNAL_ERROR]: 'An unexpected internal error occurred',
+  [ErrorCode.INTERNAL_ERROR]: 'An unexpected internal error occurred.',
   [ErrorCode.EMAIL_ALREADY_EXISTS]: 'A user with this email address already exists',
   [ErrorCode.ORG_SLUG_TAKEN]: 'Organization identifier slug is already taken',
   [ErrorCode.TICKET_CODE_TAKEN]: 'A ticket with this code already exists for the organization',
@@ -35,6 +35,13 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
     'Workflow must contain at least one initial status and one completed status',
   [ErrorCode.DUPLICATE_WORKFLOW_STATUS_KEYS]:
     'Status keys within a workflow must be unique',
+  [ErrorCode.ROLE_NOT_FOUND]: 'The specified role was not found.',
+  [ErrorCode.ROLE_KEY_EXISTS]: 'A role with this key already exists.',
+  [ErrorCode.ROLE_CANNOT_DELETE_SYSTEM]: 'Built-in system roles cannot be deleted or renamed.',
+  [ErrorCode.ROLE_IN_USE]: 'Cannot delete a role that is currently assigned to one or more staff members.',
+  [ErrorCode.USER_NOT_FOUND]: 'Staff member not found.',
+  [ErrorCode.CANNOT_DELETE_SELF]: 'Cannot delete or deactivate your own account.',
+  [ErrorCode.CANNOT_REMOVE_LAST_ADMIN]: 'Cannot remove or deactivate the last remaining organization administrator.',
 };
 
 export const ERROR_MESSAGES = ErrorMessages;
