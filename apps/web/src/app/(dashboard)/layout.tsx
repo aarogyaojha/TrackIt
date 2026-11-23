@@ -7,6 +7,7 @@ import {
   LayoutDashboardIcon,
   SettingsIcon,
   TicketIcon,
+  UsersIcon,
 } from 'lucide-react';
 import { ROUTES } from '@/constants/app.constants';
 import { useLogout } from '@/features/auth/api/useLogout';
@@ -19,6 +20,7 @@ const ORG_NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: ROUTES.DASHBOARD, icon: LayoutDashboardIcon },
   { label: 'Tickets', href: ROUTES.TICKETS, icon: TicketIcon },
   { label: 'Workflows', href: ROUTES.WORKFLOWS, icon: GitBranchIcon },
+  { label: 'Team', href: ROUTES.TEAM, icon: UsersIcon },
   { label: 'Settings', href: ROUTES.SETTINGS, icon: SettingsIcon },
 ];
 

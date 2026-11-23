@@ -11,9 +11,11 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   TICKETS: '/dashboard/tickets',
   WORKFLOWS: '/dashboard/workflows',
+  TEAM: '/dashboard/team',
   SETTINGS: '/dashboard/settings',
   SUPERADMIN: '/superadmin',
   SUPERADMIN_ORGANIZATIONS: '/superadmin/organizations',
+  SUPERADMIN_ROLES: '/superadmin/roles',
   SUPERADMIN_PLANS: '/superadmin/plans',
   SUPERADMIN_SETTINGS: '/superadmin/settings',
 } as const;
