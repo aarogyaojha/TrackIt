@@ -23,6 +23,18 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
     'Maximum verification attempts exceeded. Please request a new code.',
   [ErrorCode.EMAIL_ALREADY_VERIFIED]: 'Email is already verified',
   [ErrorCode.EMAIL_NOT_VERIFIED]: 'Email address is not verified',
+  [ErrorCode.WORKFLOW_NAME_TAKEN]:
+    'A workflow with this name already exists for the organization',
+  [ErrorCode.WORKFLOW_IN_USE]:
+    'Cannot delete or deactivate a workflow currently in use by tickets',
+  [ErrorCode.WORKFLOW_STATUS_IN_USE]:
+    'Cannot remove or modify category of a status currently in use by tickets',
+  [ErrorCode.WORKFLOW_CANNOT_DELETE_DEFAULT]:
+    'Cannot delete the default workflow. Please set another workflow as default first.',
+  [ErrorCode.INVALID_WORKFLOW_STATUSES]:
+    'Workflow must contain at least one initial status and one completed status',
+  [ErrorCode.DUPLICATE_WORKFLOW_STATUS_KEYS]:
+    'Status keys within a workflow must be unique',
 };
 
 export const ERROR_MESSAGES = ErrorMessages;

@@ -27,6 +27,7 @@ import { PlatformSettingsModule } from './modules/platform-settings/platform-set
 import { SubscriptionsModule } from './modules/subscriptions/subscription.module';
 import { TicketsModule } from './modules/tickets/ticket.module';
 import { UsersModule } from './modules/users/user.module';
+import { WorkflowsModule } from './modules/workflows/workflow.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { UsersModule } from './modules/users/user.module';
     SubscriptionsModule,
     OrganizationsModule,
     TicketsModule,
+    WorkflowsModule,
     AuthModule,
     HealthModule,
     EmailModule,
