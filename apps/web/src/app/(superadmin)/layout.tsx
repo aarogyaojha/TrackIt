@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2Icon, LayersIcon, SettingsIcon } from 'lucide-react';
+import { Building2Icon, LayersIcon, SettingsIcon, ShieldCheckIcon } from 'lucide-react';
 import { Role } from '@trackit/types';
 import { ROUTES } from '@/constants/app.constants';
 import { useLogout } from '@/features/auth/api/useLogout';
@@ -17,6 +17,11 @@ const SUPERADMIN_NAV_ITEMS: NavItem[] = [
     label: SUPERADMIN_COPY.NAV.ORGANIZATIONS,
     href: ROUTES.SUPERADMIN_ORGANIZATIONS,
     icon: Building2Icon,
+  },
+  {
+    label: SUPERADMIN_COPY.NAV.ROLES,
+    href: ROUTES.SUPERADMIN_ROLES,
+    icon: ShieldCheckIcon,
   },
   {
     label: SUPERADMIN_COPY.NAV.PLANS,

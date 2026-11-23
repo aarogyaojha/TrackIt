@@ -39,6 +39,7 @@ export const SUPERADMIN_COPY = {
   PORTAL_LABEL: 'Superadmin',
   NAV: {
     ORGANIZATIONS: 'Organizations',
+    ROLES: 'Roles',
     PLANS: 'Plans',
     SETTINGS: 'Settings',
   },
