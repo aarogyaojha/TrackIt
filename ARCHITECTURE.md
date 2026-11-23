@@ -41,7 +41,7 @@ TrackIt is a multi-tenant ticketing and status-tracking SaaS designed for servic
 +-------------------------------------------------------------------------------+
 |                            MongoDB 7 (Replica Set)                            |
 |                                                                               |
-|   Collections: organizations, users, tickets, plans, subscriptions,           |
+|   Collections: organizations, users, tickets, workflows, plans, subscriptions,|
 |                platform_settings                                              |
 +-------------------------------------------------------------------------------+
 ```
@@ -73,7 +73,7 @@ The repository is organized as a Turborepo-managed monorepo with npm workspaces:
 
 - **`apps/api`**: Pure REST API backend built on NestJS, TypeScript, Mongoose, and Swagger. Exposes versioned endpoints under `/api/v1` and health checks under `/health`.
 - **`apps/web`**: Frontend application built on Next.js (App Router), React 19, Tailwind CSS v4, shadcn/ui primitives, TanStack Query, and Redux Toolkit.
-- **`packages/types`**: Single source of truth for cross-app TypeScript types, data transfer objects, and domain enums (`Role`, `OrgStatus`, `PlanTier`, `TicketStatus`).
+- **`packages/types`**: Single source of truth for cross-app TypeScript types, data transfer objects, and domain enums (`Role`, `OrgStatus`, `PlanTier`, `TicketStatus`, `StatusCategory`, Workflow interfaces).
 - **`packages/config`**: Reusable configurations for TypeScript and ESLint across all workspaces.
 
 ---
@@ -133,7 +133,7 @@ TrackIt uses a **logical database partitioning** strategy within a shared MongoD
 
 1. **Tenant Identification**: Every organization has a globally unique `slug` (e.g., `acme-repairs`) used for routing.
 2. **Reserved Slugs**: A pre-compiled list of reserved slugs (`login`, `register`, `dashboard`, `superadmin`, `api`, `health`, `public`, `t`, `admin`, `app`, `www`) prevents collisions with static application routes. The organization registration routine automatically appends numeric suffixes if a collision is detected.
-3. **Data Isolation**: All tenant-owned collections (`tickets`, `users`, `subscriptions`) contain an indexed `organizationId` field.
+3. **Data Isolation**: All tenant-owned collections (`tickets`, `users`, `workflows`, `subscriptions`) contain an indexed `organizationId` field. Workflows enforce a partial unique index `{ organizationId: 1, isDefault: 1 }` with `partialFilterExpression: { isDefault: true }` to guarantee a single default workflow per tenant.
 4. **Authenticated Scoping**: For authenticated tenant operations, `TenantGuard` and the `@CurrentOrg()` decorator resolve `organizationId` directly from the validated JWT payload. Request bodies or query parameters are never trusted for tenant scoping.
 5. **Public Scoping**: For customer status lookups, the tenant is resolved via the URL path slug `/:orgSlug/t/:code`, querying against a compound index `{ organizationId, code }`.
 
@@ -181,42 +181,48 @@ TrackIt features a tiered subscription model (`FREE`, `BASIC`, `PRO`):
   - `maxActiveTickets` (e.g., 20 for Free, 100 for Basic, Unlimited for Pro)
   - `maxStaffUsers` (e.g., 2 for Free, 10 for Basic, Unlimited for Pro)
   - `maxTicketsPerMonth` (e.g., 50 for Free, 300 for Basic, Unlimited for Pro)
-- **Enforcement (`assertPlanLimit`)**: Before creating a ticket, `SubscriptionsService.assertPlanLimit()` verifies current usage against the plan limits. If a threshold is reached, an `AppException(409, PLAN_LIMIT_EXCEEDED)` is thrown.
+  - `maxWorkflows` (e.g., 1 for Free, 3 for Basic, 10 for Pro)
+- **Enforcement (`assertPlanLimit`)**: Before creating a ticket or a custom workflow, `SubscriptionsService.assertPlanLimit()` verifies current usage against plan limits. If a threshold is reached, an `AppException(409, PLAN_LIMIT_EXCEEDED)` is thrown.
+- **Live Usage Calculation**: Subscription summaries dynamically compute live counts for `staffUsers` (users repository), `workflows` (workflows repository), and `activeTickets` (tickets repository querying active categories `INITIAL`, `IN_PROGRESS`, `READY`).
 - **Monthly Usage Reset**: A scheduled cron job (`@nestjs/schedule`) executes at `00:00` on the 1st of every month to reset `ticketsThisMonth` counters across all active subscriptions.
 - **Payment Seam**: Currently, subscription tier changes are executed directly by superadmins. The subscription service cleanly encapsulates limits and status checks, ready to connect to external billing gateways (e.g., Stripe) in the future.
 
 ---
 
-## 7. Ticket Lifecycle & Public Tracking Surface
+## 7. Ticket Lifecycle, Custom Workflows & Public Tracking
 
-### Ticket State Machine
-Tickets transition through a deterministic lifecycle:
+### Tenant-Defined Custom Workflows
+Instead of hardcoding status flows across all organizations, TrackIt supports tenant-defined custom workflows:
 
-```
-   [ RECEIVED ] ---> [ IN_PROGRESS ] ---> [ READY ] ---> [ DELIVERED ]
-        |                   |                 |             (Terminal)
-        |                   |                 |
-        +-------------------+-----------------+
-                            |
-                            v
-                      [ CANCELLED ]
-                       (Terminal)
-```
+- **Workflow Model**: Each organization defines one or more workflows containing between 2 and 12 ordered stages (`WorkflowStatus`).
+- **Lifecycle Categories**: Every workflow status maps to a `StatusCategory` enum:
+  - `INITIAL`: Ticket intake / received stage (at least one required per workflow).
+  - `IN_PROGRESS`: Active servicing stages (e.g., diagnosis, repair, assembly).
+  - `READY`: Service complete, awaiting pickup / delivery.
+  - `COMPLETED`: Terminal collected / fulfilled stage (at least one required per workflow).
+  - `CANCELLED`: Terminal cancellation stage.
+- **Default Workflow Integrity**: Each org has a designated default workflow (auto-seeded upon org creation or lazy-seeded on first lookup). Race conditions during concurrent seeding are caught via duplicate key (11000) on the partial unique index `{ organizationId: 1, isDefault: 1 }` and recovered by re-fetching the existing default.
+- **State Transitions**: Tickets advance along their workflow's ordered stages or transition to `CANCELLED`. Arbitrary jumps outside configured progression throw `409 INVALID_STATUS_TRANSITION`.
+- **In-Use Safeguards**: Editing an active workflow to remove a status key or change its category is blocked with `409 WORKFLOW_STATUS_IN_USE` if any tickets currently hold that status or have it recorded in their audit history. Deleting or deactivating in-use workflows is rejected (`409 WORKFLOW_IN_USE`), and the default workflow cannot be deleted (`400 WORKFLOW_CANNOT_DELETE_DEFAULT`).
 
-- **Transitions**:
-  - `RECEIVED` $\rightarrow$ `IN_PROGRESS`, `CANCELLED`
-  - `IN_PROGRESS` $\rightarrow$ `READY`, `CANCELLED`
-  - `READY` $\rightarrow$ `DELIVERED`, `CANCELLED`
-  - `DELIVERED` & `CANCELLED` are terminal states.
-- **QR Code Generation**: Upon ticket retrieval, the backend generates an inline base64 QR code data URL (`qrcode.toDataURL`) encoding the public status URL `/:orgSlug/t/:code`.
+### QR Code Generation
+Upon ticket retrieval, the backend generates an inline base64 QR code data URL (`qrcode.toDataURL`) encoding the public status URL `/:orgSlug/t/:code`.
+
+### Organization Public Tracking Portal & Counter QR Stand
+In addition to per-ticket status tracking QR codes (`/:orgSlug/t/:code`), organizations have a dedicated public tracking portal (`/:orgSlug`) and counter QR stand:
+
+1. **Organization Counter QR Code**: The authenticated endpoint `GET /api/v1/organizations/me/check-in-qr` generates a high-resolution QR code data URL linking directly to the organization's public tracking portal (`/:orgSlug`). Front desk staff can copy the link, download the QR code image, or print a branded counter stand signage poster via a dedicated print dialog.
+2. **Superadmin QR Inspection & Download**: Platform operators can inspect, copy URLs, print signage, and download QR codes for any tenant organization via `GET /api/v1/organizations/:id/check-in-qr` (`@SuperAdminOnly()`), available directly within the superadmin organizations table and detail view.
+3. **Public Organization Metadata**: `GET /api/v1/public/:orgSlug/info` provides sanitized organization details (`organizationName`, `slug`). If the organization does not exist or is not `ACTIVE`, a privacy-preserving `404 NOT_FOUND` is returned.
+4. **Public Ticket Lookup**: `GET /api/v1/public/:orgSlug/lookup?query=...` allows customers scanning the counter QR code or visiting `/:orgSlug` to search for their service tickets by entering their ticket code (with or without `TK-` prefix) or phone number. Returns sanitized public ticket shapes matching `toPublicTicketResponse`.
+5. **Customer Self-Service Intake (Optional Alternative)**: `GET /api/v1/public/:orgSlug/intake` and `POST /api/v1/public/:orgSlug/tickets` support self-service customer item submission if counter kiosk check-in is desired. Tickets are assigned the initial workflow stage, unique `TK-XXXXXX` codes, and checked against plan limits.
 
 ### Privacy-Preserving Public Tracking
-
-When an anonymous customer queries a ticket status:
+When an anonymous customer queries ticket status at `/:orgSlug/t/:code`:
 
 1. The public tracking controller queries the organization by `slug` and ticket by `code`.
-2. **Privacy Design**: If the organization does not exist, or the organization is `PENDING`/`SUSPENDED`/`REJECTED`, or the ticket `code` is invalid, the endpoint deliberately returns a uniform `404 TICKET_NOT_FOUND` error.
-3. This prevents malicious actors from enumerating valid organization slugs or testing for the existence of suspended accounts.
+2. **Ambiguity & Privacy Design**: If the organization does not exist, or is `PENDING`/`SUSPENDED`/`REJECTED`, or the ticket `code` is invalid, the endpoint deliberately returns a uniform `404 TICKET_NOT_FOUND` error.
+3. **Payload Sanitization**: `toPublicTicketResponse` strictly exposes only customer-safe attributes: `organizationName`, `code`, `customerName`, `itemDescription`, current `customerLabel`, `customerDescription`, `category`, ordered `stages` (with customer labels and categories), and `statusHistory` timestamps. Sensitive internal attributes (`workflowId`, MongoDB `_id`, staff-facing status names, `customerPhone`, staff `changedBy` user IDs) are strictly omitted.
 
 ---
 
@@ -251,11 +257,11 @@ The repository employs automated testing for backend components:
 
 | Scope | Test Runner / Framework | Current Test Count | Coverage Summary |
 | :--- | :--- | :--- | :--- |
-| **Backend Unit Tests** | Jest + Mocked Repositories / In-memory | **15 suites / 83 tests** (Passing) | Service logic, response mappers, pipes, plan assertions, auth flows |
-| **Backend E2E Tests** | Jest + `mongodb-memory-server` + Supertest | **7 suites / 61 tests** (Passing) | Auth rotation, throttling limits, health probes, tickets, superadmin |
+| **Backend Unit Tests** | Jest + Mocked Repositories / In-memory | **19 suites / 133 tests** (Passing) | Service logic, response mappers, pipes, plan assertions, auth flows, workflow mutations, duplicate-key race recovery, script backfills, public intake, QR generation |
+| **Backend E2E Tests** | Jest + `mongodb-memory-server` + Supertest | **8 suites / 90 tests** (Passing) | Auth rotation, throttling limits, health probes, tickets, public portal lookup, superadmin org QR access, workflows lifecycle and tenant isolation |
 | **Frontend Tests** | *None configured* | **0 tests** | Frontend test suite not yet implemented |
 
-*Total automated test coverage: 144 passing backend tests across 22 suites.*
+*Total automated test coverage: 221 passing backend tests across 27 suites.*
 
 ---
 
@@ -268,3 +274,4 @@ The following items represent current technical constraints and architectural tr
 3. **No CI/CD Pipeline**: Continuous integration and deployment pipelines are not yet configured; all validation has been performed via local test execution.
 4. **In-Memory Rate Limiting**: The NestJS throttler uses the default in-memory storage adapter. Rate limiting counters do not synchronize across horizontally scaled API instances (requires a distributed Redis store before multi-instance deployment).
 5. **No Billing Gateway Integration**: Plan tier upgrades and downgrades are managed directly by platform superadmins without an integrated payment gateway (e.g. Stripe).
+6. **Legacy Ticket Workflow Migration**: Organizations created prior to custom workflows require the backfill script (`npm run backfill:workflows --workspace=api`) to link tickets to their default workflow and populate denormalized `statusCategory` values. Active-ticket queries retain backwards-compatible fallbacks.

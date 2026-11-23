@@ -58,6 +58,7 @@ packages/config  shared eslint + tsconfig
 - `Organization` has a globally-unique `slug` (used in URLs and as the "unique code").
 - Reserved slugs (`login`, `register`, `dashboard`, `superadmin`, `api`, `health`, `public`, `t`, `admin`, `app`, `www`, `''`) defined in `organization.constants.ts`'s `RESERVED_SLUGS` prevent collisions with top-level Next.js static routing. The registration loop automatically skips reserved candidates and suffixes a numeric identifier without touching the database.
 - Every tenant-owned resource (tickets, staff users) stores `organizationId`. All repository queries for tenant data must filter by it — no exceptions.
+- `Workflow` is tenant-scoped with a compound unique index `{ organizationId, name }` and a partial unique index `{ organizationId: 1, isDefault: 1 }` with `partialFilterExpression: { isDefault: true }` to guarantee exactly one default workflow per organization even under concurrent lazy seeding.
 - `Ticket.code` is unique only within an org: compound unique index `{ organizationId, code }`, not globally unique. Normalized to uppercase before persisting (via schema `uppercase: true` and service normalization).
 - Authenticated admin/staff routes resolve the org from the JWT via `TenantGuard` + `@CurrentOrg()` decorator. Never trust an org id from the request body/query for scoping.
 - Public status-page routes resolve the org from the URL slug (`/:orgSlug/t/:code`), no auth — deliberately public, still org-scoped by the slug + compound index lookup.
@@ -111,12 +112,37 @@ List endpoints use PaginationQueryDto (page/limit) and BaseRepository.findPagina
 
 ## Subscription / Plans
 
-- `Plan` is DB-backed (get-or-create pattern like `PlatformSettings`), defines tier (`FREE` / `BASIC` / `PRO`) and limits (`maxActiveTickets`, `maxStaffUsers`, `maxTicketsPerMonth`). Default limits are defined in `plan.constants.ts`.
+- `Plan` is DB-backed (get-or-create pattern like `PlatformSettings`), defines tier (`FREE` / `BASIC` / `PRO`) and limits (`maxActiveTickets`, `maxStaffUsers`, `maxTicketsPerMonth`, `maxWorkflows`). Default limits are defined in `plan.constants.ts` (FREE: 1, BASIC: 3, PRO: 10 workflows).
 - `Subscription` doc per org: links `organizationId` to `planTier` + usage counters (`ticketsThisMonth`, `currentPeriodStart`).
-- `assertPlanLimit()` helper exists in `SubscriptionsService` and is tested, ready for Phase 6 ticket creation and future staff-invite features. Throws `PLAN_LIMIT_EXCEEDED` (409) when at/over limits.
+- `assertPlanLimit()` helper in `SubscriptionsService` validates usage against plan limits: `maxTicketsPerMonth`, `maxStaffUsers`, `maxActiveTickets`, and `maxWorkflows`. Throws `PLAN_LIMIT_EXCEEDED` (409) when at/over limits.
+- Subscription usage summary calculates live counts for `staffUsers` (users collection), `workflows` (workflows collection), and `activeTickets` (tickets collection filtering by active categories `INITIAL`, `IN_PROGRESS`, `READY`).
 - Monthly usage counters reset on the 1st of each calendar month via `@nestjs/schedule` cron calling a directly-testable `resetMonthlyUsageCounters()` method.
 - Plan tier changes are instant and superadmin-only with no proration.
 - No real payment gateway yet — plan changes are superadmin-actioned for now; leave a clean seam to slot one in later.
+
+## Workflows & Ticket Lifecycle
+
+- Workflows allow each organization to define custom ticket statuses and progress sequences.
+- Each workflow contains 2 to 12 ordered statuses (`WorkflowStatus`). Every workflow must have at least one status in category `INITIAL` and at least one in category `COMPLETED`.
+- Categories: `StatusCategory` (`INITIAL`, `IN_PROGRESS`, `READY`, `COMPLETED`, `CANCELLED`).
+- Tickets store `workflowId` (referencing the org's workflow) and denormalized `statusCategory` for efficient active-ticket counting and lifecycle queries.
+- Moving ticket statuses: tickets advance forward along the workflow's ordered sequence or jump directly to any status categorized as `CANCELLED`. Invalid jumps throw `INVALID_STATUS_TRANSITION` (409).
+- Workflow modification protections: In `WorkflowsService.update`, removing a status key or changing its category is rejected with `WORKFLOW_STATUS_IN_USE` (409) if any ticket in that org currently has that status or includes it in `statusHistory`. Deleting or deactivating an in-use workflow returns `WORKFLOW_IN_USE` (409), and deleting a default workflow is blocked (`WORKFLOW_CANNOT_DELETE_DEFAULT`, 400).
+- Default workflow race handling: concurrent lazy seeding catching Mongo duplicate key code 11000 gracefully re-queries and returns the existing default workflow.
+- Public ticket response sanitization: `toPublicTicketResponse` exposes only customer-safe fields (`organizationName`, `code`, `customerName`, `itemDescription`, `customerLabel`, `customerDescription`, `category`, `stages`, `statusHistory`, `createdAt`). Internal staff names, internal workflow IDs, customer phone numbers, and staff `changedBy` identifiers are never exposed on public endpoints.
+- Organization Public Tracking Portal & Counter QR:
+  - Organization staff enters all customer and item details in the dashboard.
+  - Customers scan the organization's counter QR code or visit `/:orgSlug` to access the live tracking portal.
+  - `GET /api/v1/public/:orgSlug/info` returns organization public details (`organizationName`, `slug`) with privacy-preserving 404 for missing/suspended orgs.
+  - `GET /api/v1/public/:orgSlug/lookup?query=...` looks up tickets by code (exact or without `TK-` prefix) or customer phone number, returning matching sanitized public ticket data.
+  - `GET /api/v1/organizations/me/check-in-qr` provides authenticated staff with their organization live tracking portal QR code data URL (target: `/:orgSlug`).
+  - `GET /api/v1/organizations/:id/check-in-qr` provides platform superadmins with any organization's tracking QR code and public tracking URL (`@SuperAdminOnly()`).
+  - Frontend: Organization tracking portal at `/[orgSlug]`, direct ticket tracking at `/[orgSlug]/t/[code]`, `<CounterQrCard />` in dashboard and settings with PNG QR download, printable counter stand signage modal `<PrintCounterSignDialog />`, and superadmin QR viewing & downloading via `<SuperAdminOrgQrCard />` on `/superadmin/organizations/[id]` and `<OrgQrDialog />` in the organizations list table.
+- Public Customer Intake (Self-Service Alternative):
+  - `Ticket` schema allows optional `createdBy` and `statusHistory.changedBy` if self-registration is enabled.
+  - `GET /api/v1/public/:orgSlug/intake` returns business details and active workflow options.
+  - `POST /api/v1/public/:orgSlug/tickets` accepts self-service ticket submissions, assigns initial status in `INITIAL` category, enforces plan limits (`maxActiveTickets`, `maxTicketsPerMonth`), increments monthly counter, and generates a unique `TK-XXXXXX` code.
+- Backfill script: `apps/api/src/scripts/backfill-workflows.ts` (`npm run backfill:workflows --workspace=api`) idempotently provisions default workflows for orgs and migrates legacy ticket shapes.
 
 ## Rate Limiting
 
