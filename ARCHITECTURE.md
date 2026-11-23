@@ -257,11 +257,11 @@ The repository employs automated testing for backend components:
 
 | Scope | Test Runner / Framework | Current Test Count | Coverage Summary |
 | :--- | :--- | :--- | :--- |
-| **Backend Unit Tests** | Jest + Mocked Repositories / In-memory | **19 suites / 133 tests** (Passing) | Service logic, response mappers, pipes, plan assertions, auth flows, workflow mutations, duplicate-key race recovery, script backfills, public intake, QR generation |
+| **Backend Unit Tests** | Jest + Mocked Repositories / In-memory | **19 suites / 139 tests** (Passing) | Service logic, response mappers, pipes, plan assertions, auth flows, workflow mutations, duplicate-key race recovery, script backfills, public intake, QR generation |
 | **Backend E2E Tests** | Jest + `mongodb-memory-server` + Supertest | **8 suites / 90 tests** (Passing) | Auth rotation, throttling limits, health probes, tickets, public portal lookup, superadmin org QR access, workflows lifecycle and tenant isolation |
 | **Frontend Tests** | *None configured* | **0 tests** | Frontend test suite not yet implemented |
 
-*Total automated test coverage: 221 passing backend tests across 27 suites.*
+*Total automated test coverage: 229 passing backend tests across 27 suites.*
 
 ---
 

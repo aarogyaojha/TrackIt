@@ -10,10 +10,11 @@ TrackIt is a modern, full-stack multi-tenant platform built for service business
 
 - **Multi-Tenant Architecture**: Logical data isolation per organization with custom subpaths, unique slugs, and reserved-slug protection.
 - **Organization Onboarding & Approval**: Self-service organization registration with superadmin-gated approval workflows (toggleable platform setting).
-- **Tiered Subscription Plans**: Built-in plan definitions (`FREE`, `BASIC`, `PRO`) with automatic active-ticket, staff, and monthly usage limits enforcement.
-- **Real-Time Ticket Management**: Full lifecycle state machine (`RECEIVED` $\rightarrow$ `IN_PROGRESS` $\rightarrow$ `READY` $\rightarrow$ `DELIVERED`, with cancellations), item logging, and customer details.
-- **Instant Public Tracking**: Anonymous, privacy-preserving tracking page (`/:orgSlug/t/:code`) with dynamically generated QR codes for customers.
-- **Superadmin Control Plane**: Dedicated superadmin portal to inspect organizations, approve/reject/suspend tenants, adjust plan tiers, and manage platform settings.
+- **Tenant-Defined Custom Workflows**: Flexible stage management where organizations define their own ordered service stages (2 to 12 statuses across `INITIAL`, `IN_PROGRESS`, `READY`, `COMPLETED`, `CANCELLED` categories) with customizable customer-facing labels, descriptions, and automatic validation against invalid jumps or deletion of in-use statuses.
+- **Tiered Subscription Plans**: Built-in plan definitions (`FREE`, `BASIC`, `PRO`) with automatic usage limits enforcement across active tickets, monthly ticket volume, staff users, and workflows (`maxWorkflows`).
+- **Instant Public Tracking & Organization Portal**: Anonymous, privacy-preserving tracking pages for individual tickets (`/:orgSlug/t/:code`) and an organization-level live status lookup portal (`/:orgSlug`) where customers can search by ticket code or phone number.
+- **Counter QR & Stand Signage**: Dynamically generated high-resolution QR codes linking to the organization's tracking portal, with in-app printable counter stand signage posters and image download.
+- **Superadmin Control Plane**: Dedicated superadmin portal to inspect organizations, approve/reject/suspend tenants, inspect and download organization tracking QR codes, adjust plan tiers, and manage platform settings.
 - **Robust Authentication & Security**: Short-lived JWT access tokens stored in memory, rotating httpOnly refresh cookies, `has_session` presence cookie heuristic, and role-based access control (`SUPERADMIN`, `ORG_ADMIN`, `ORG_STAFF`).
 - **Multi-Tier Rate Limiting**: Intelligent endpoint throttling for general requests, auth endpoints, and public status lookups.
 
@@ -140,6 +141,7 @@ Follow these steps to get a local instance of TrackIt up and running:
 | `npm run test --workspace=api` | Run backend Jest unit tests |
 | `npm run test:e2e --workspace=api` | Run backend end-to-end test suite |
 | `npm run seed:superadmin --workspace=api` | Seed initial superadmin user in the database |
+| `npm run backfill:workflows --workspace=api` | Idempotently provision default workflows and migrate legacy ticket shapes |
 
 ### Frontend (`apps/web`)
 

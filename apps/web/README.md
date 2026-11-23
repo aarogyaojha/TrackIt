@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TrackIt Web (`apps/web`)
 
-## Getting Started
+The frontend web application for **TrackIt**, built with Next.js 16 (App Router), React 19, Tailwind CSS v4, and shadcn/ui.
 
-First, run the development server:
+---
+
+## Features & Portals
+
+- **Marketing Landing Page (`/`)**: Product showcase, features summary, and quick navigation.
+- **Authentication (`/login`, `/register`)**: Token-in-memory auth flow with Redux Toolkit, httpOnly session refresh, and automatic redirection.
+- **Tenant Dashboard (`/dashboard`)**:
+  - **Overview**: Live status metrics, recent tickets, counter tracking QR card, and quick links.
+  - **Tickets (`/dashboard/tickets`, `/dashboard/tickets/[id]`)**: Filterable, paginated ticket list, creation modal with workflow selector, detail view with live status progress stepper.
+  - **Workflows (`/dashboard/workflows`)**: Custom stage sequence builder, stage ordering, status categories, and default workflow management.
+  - **Settings (`/dashboard/settings`)**: Organization profile, subscription usage summary, and printable counter stand signage poster.
+- **Superadmin Control Plane (`/superadmin`)**:
+  - **Organizations (`/superadmin/organizations`, `.../[id]`)**: Approval queue, status management, plan tier adjustment, and multi-tenant QR code inspection/download.
+  - **Plans (`/superadmin/plans`)**: Platform-wide limit controls (`maxActiveTickets`, `maxStaffUsers`, `maxTicketsPerMonth`, `maxWorkflows`).
+  - **Settings (`/superadmin/settings`)**: Toggle organization registration approval requirement.
+- **Public Customer Tracking Surface**:
+  - **Live Tracking Portal (`/[orgSlug]`)**: Branded public page where customers look up tickets by code or phone number.
+  - **Direct Ticket Status (`/[orgSlug]/t/[code]`)**: Anonymous, live status tracker with responsive stage stepper, item description, and service history.
+
+---
+
+## Mobile Responsiveness & Navigation
+
+- **Mobile Hamburger Drawer**: Responsive slide-over navigation drawer in `DashboardShell` with backdrop, touch gestures, auto-closing on route changes, and keyboard `Escape` handling.
+- **Marketing Navbar**: Collapsible mobile menu panel on small screens.
+- **Responsive Organizations View**: Mobile cards layout on small screens and full table with dedicated QR column on desktop.
+
+---
+
+## Development Scripts
 
 ```bash
+# Start Next.js development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compile production bundle
+npm run build
+
+# Start Next.js production server
+npm run start
+
+# Run ESLint
+npm run lint
+
+# Run tests
+npm run test
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
