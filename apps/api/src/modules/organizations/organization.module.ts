@@ -25,3 +25,4 @@ import { OrganizationsService } from './organization.service';
   exports: [OrganizationsRepository, OrganizationsService],
 })
 export class OrganizationsModule {}
+

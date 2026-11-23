@@ -46,6 +46,27 @@ export const TICKETS_SWAGGER = {
   GET_PUBLIC_DESCRIPTION:
     'Fetches customer-facing status and progress history for a ticket without requiring authentication.',
   GET_PUBLIC_OK_DESCRIPTION: 'Public ticket details retrieved successfully.',
+  GET_PUBLIC_INTAKE_SUMMARY:
+    'Get organization public check-in info and active workflows',
+  GET_PUBLIC_INTAKE_DESCRIPTION:
+    'Retrieves public information and active workflows for an organization to display on the customer self-check-in portal.',
+  GET_PUBLIC_INTAKE_OK_DESCRIPTION:
+    'Organization public check-in info retrieved successfully.',
+  CREATE_PUBLIC_SUMMARY: 'Submit customer self-check-in ticket',
+  CREATE_PUBLIC_DESCRIPTION:
+    'Creates a new ticket initiated by a customer through the public intake portal, automatically assigning a unique ticket code.',
+  CREATE_PUBLIC_CREATED_DESCRIPTION:
+    'Customer ticket created successfully.',
+  GET_PUBLIC_INFO_SUMMARY: 'Get organization public portal information',
+  GET_PUBLIC_INFO_DESCRIPTION:
+    'Retrieves public organization name and slug for the public tracking portal.',
+  GET_PUBLIC_INFO_OK_DESCRIPTION:
+    'Organization public portal information retrieved successfully.',
+  LOOKUP_PUBLIC_SUMMARY: 'Look up live tickets by ticket code or customer phone',
+  LOOKUP_PUBLIC_DESCRIPTION:
+    'Searches for customer tickets by code or phone number and returns sanitized public tracking details.',
+  LOOKUP_PUBLIC_OK_DESCRIPTION:
+    'Matching public tickets retrieved successfully.',
 } as const;
 
 export const MIN_CUSTOMER_NAME_LENGTH = 2;
@@ -73,4 +94,7 @@ export const TICKETS_DTO_SWAGGER = {
   STATUS_EXAMPLE: TicketStatus.IN_PROGRESS,
   SEARCH_QUERY_DESCRIPTION: 'Search tickets by code or customer name',
   STATUS_QUERY_DESCRIPTION: 'Filter tickets by status',
+  WORKFLOW_ID_DESCRIPTION:
+    'Optional ID of the workflow defining the status lifecycle for this ticket',
+  WORKFLOW_ID_EXAMPLE: '60c72b2f9b1d8b2bad8e8910',
 } as const;

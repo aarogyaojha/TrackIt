@@ -5,6 +5,7 @@ import { Types } from 'mongoose';
 import { OrgStatus, Role } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode } from '../../constants';
+import { AppConfigService } from '../../config/app-config.service';
 import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
 import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { UsersService } from '../users/user.service';
@@ -72,6 +73,12 @@ describe('OrganizationsService', () => {
         {
           provide: SubscriptionsService,
           useValue: mockSubscriptionsService,
+        },
+        {
+          provide: AppConfigService,
+          useValue: {
+            corsOrigin: 'http://localhost:3000',
+          },
         },
         {
           provide: getConnectionToken(),
@@ -488,6 +495,56 @@ describe('OrganizationsService', () => {
         } as unknown as OrganizationDocument);
 
         await expect(service.reactivate(orgId)).rejects.toThrow(AppException);
+      });
+    });
+
+    describe('getCheckInQr', () => {
+      it('should return check-in URL and QR code for valid tenant organization', async () => {
+        organizationsRepository.findById.mockResolvedValue({
+          _id: orgId,
+          name: 'Apex Auto',
+          slug: 'apex-auto',
+          status: OrgStatus.ACTIVE,
+        } as unknown as OrganizationDocument);
+
+        const result = await service.getCheckInQr(orgId);
+
+        expect(result.organizationName).toBe('Apex Auto');
+        expect(result.orgSlug).toBe('apex-auto');
+        expect(result.checkInUrl).toBe('http://localhost:3000/apex-auto');
+        expect(result.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+      });
+
+      it('should throw NOT_FOUND if organization does not exist', async () => {
+        organizationsRepository.findById.mockResolvedValue(null);
+
+        await expect(service.getCheckInQr(orgId)).rejects.toThrow(AppException);
+      });
+    });
+
+    describe('getCheckInQrForSuperadmin', () => {
+      it('should return check-in URL and QR code for any organization by ID', async () => {
+        organizationsRepository.findById.mockResolvedValue({
+          _id: orgId,
+          name: 'Any Org',
+          slug: 'any-org',
+          status: OrgStatus.ACTIVE,
+        } as unknown as OrganizationDocument);
+
+        const result = await service.getCheckInQrForSuperadmin(orgId);
+
+        expect(result.organizationName).toBe('Any Org');
+        expect(result.orgSlug).toBe('any-org');
+        expect(result.checkInUrl).toBe('http://localhost:3000/any-org');
+        expect(result.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+      });
+
+      it('should throw NOT_FOUND if organization does not exist', async () => {
+        organizationsRepository.findById.mockResolvedValue(null);
+
+        await expect(
+          service.getCheckInQrForSuperadmin(orgId),
+        ).rejects.toThrow(AppException);
       });
     });
   });

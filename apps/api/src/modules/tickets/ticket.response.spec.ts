@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { TicketStatus } from '@trackit/types';
+import { StatusCategory, TicketStatus } from '@trackit/types';
 import {
   toPublicTicketResponse,
   toTicketResponse,
@@ -15,11 +15,13 @@ describe('Ticket Response Mappers', () => {
   const mockTicket = {
     _id: ticketId,
     organizationId: orgId,
+    workflowId: new Types.ObjectId(),
     code: 'BIKE-001',
     customerName: 'Alice Springs',
     customerPhone: '+1234567890',
     itemDescription: 'Trek Road Bike Tune-up',
     status: TicketStatus.RECEIVED,
+    statusCategory: StatusCategory.INITIAL,
     statusHistory: [
       {
         status: TicketStatus.RECEIVED,
@@ -41,11 +43,13 @@ describe('Ticket Response Mappers', () => {
 
       expect(res).toEqual({
         id: ticketId.toString(),
+        workflowId: mockTicket.workflowId?.toString(),
         code: 'BIKE-001',
         customerName: 'Alice Springs',
         customerPhone: '+1234567890',
         itemDescription: 'Trek Road Bike Tune-up',
         status: TicketStatus.RECEIVED,
+        statusCategory: StatusCategory.INITIAL,
         statusHistory: [
           {
             status: TicketStatus.RECEIVED,
@@ -62,20 +66,54 @@ describe('Ticket Response Mappers', () => {
   });
 
   describe('toPublicTicketResponse', () => {
-    it('excludes customerPhone, changedBy, and internal _id/id', () => {
+    it('exposes only customer-safe fields and omits internal IDs, phone numbers, workflowId, staff names, and changedBy', () => {
       const orgName = 'Apex Repairs Ltd.';
+      const mockWorkflow = {
+        statuses: [
+          {
+            key: 'RECEIVED',
+            name: 'Received (Staff Internal Name)',
+            customerLabel: 'Received by Workshop',
+            customerDescription: 'Item is safely received.',
+            category: StatusCategory.INITIAL,
+            order: 0,
+          },
+          {
+            key: 'IN_PROGRESS',
+            name: 'In Progress (Staff)',
+            customerLabel: 'Being Repaired',
+            customerDescription: 'Our technicians are working on it.',
+            category: StatusCategory.IN_PROGRESS,
+            order: 1,
+          },
+        ],
+      };
 
-      const res = toPublicTicketResponse(mockTicket, orgName);
+      const res = toPublicTicketResponse(mockTicket, orgName, mockWorkflow);
 
       expect(res).toEqual({
         organizationName: 'Apex Repairs Ltd.',
         code: 'BIKE-001',
         customerName: 'Alice Springs',
         itemDescription: 'Trek Road Bike Tune-up',
-        status: TicketStatus.RECEIVED,
+        customerLabel: 'Received by Workshop',
+        customerDescription: 'Item is safely received.',
+        category: StatusCategory.INITIAL,
+        stages: [
+          {
+            customerLabel: 'Received by Workshop',
+            customerDescription: 'Item is safely received.',
+            category: StatusCategory.INITIAL,
+          },
+          {
+            customerLabel: 'Being Repaired',
+            customerDescription: 'Our technicians are working on it.',
+            category: StatusCategory.IN_PROGRESS,
+          },
+        ],
         statusHistory: [
           {
-            status: TicketStatus.RECEIVED,
+            customerLabel: 'Received by Workshop',
             changedAt: date,
           },
         ],
@@ -85,10 +123,46 @@ describe('Ticket Response Mappers', () => {
       // Explicit assertions ensuring sensitive fields are omitted
       expect('id' in res).toBe(false);
       expect('_id' in res).toBe(false);
+      expect('workflowId' in res).toBe(false);
+      expect('workflow' in res).toBe(false);
+      expect('name' in res).toBe(false);
+      expect('status' in res).toBe(false);
+      expect('statusCategory' in res).toBe(false);
       expect('customerPhone' in res).toBe(false);
       expect('createdBy' in res).toBe(false);
+      expect('changedBy' in res).toBe(false);
       expect('qrCodeDataUrl' in res).toBe(false);
-      expect(res.statusHistory[0]).not.toHaveProperty('changedBy');
+      expect('changedBy' in res.statusHistory[0]).toBe(false);
+    });
+
+    it('handles missing workflow gracefully with fallback values', () => {
+      const orgName = 'Apex Repairs Ltd.';
+
+      const res = toPublicTicketResponse(mockTicket, orgName);
+
+      expect(res).toEqual({
+        organizationName: 'Apex Repairs Ltd.',
+        code: 'BIKE-001',
+        customerName: 'Alice Springs',
+        itemDescription: 'Trek Road Bike Tune-up',
+        customerLabel: TicketStatus.RECEIVED,
+        customerDescription: undefined,
+        category: StatusCategory.INITIAL,
+        stages: [],
+        statusHistory: [
+          {
+            customerLabel: TicketStatus.RECEIVED,
+            changedAt: date,
+          },
+        ],
+        createdAt: date,
+      });
+
+      expect('id' in res).toBe(false);
+      expect('_id' in res).toBe(false);
+      expect('workflowId' in res).toBe(false);
+      expect('customerPhone' in res).toBe(false);
+      expect('changedBy' in res).toBe(false);
     });
   });
 });

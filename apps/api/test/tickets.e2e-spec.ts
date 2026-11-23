@@ -482,10 +482,42 @@ describe('Tickets Module (e2e)', () => {
       code: 'PUB-001',
       customerName: 'Public Customer',
       itemDescription: 'Public Item',
-      status: TicketStatus.RECEIVED,
+      customerLabel: 'Received',
+      customerDescription:
+        'Your item has been received and checked into our system.',
+      category: 'INITIAL',
+      stages: [
+        {
+          customerLabel: 'Received',
+          customerDescription:
+            'Your item has been received and checked into our system.',
+          category: 'INITIAL',
+        },
+        {
+          customerLabel: 'In Progress',
+          customerDescription: 'Our team is actively working on your item.',
+          category: 'IN_PROGRESS',
+        },
+        {
+          customerLabel: 'Ready for Pickup',
+          customerDescription:
+            'Work is complete. Your item is ready for collection or delivery.',
+          category: 'READY',
+        },
+        {
+          customerLabel: 'Delivered / Completed',
+          customerDescription: 'The order has been completed and returned.',
+          category: 'COMPLETED',
+        },
+        {
+          customerLabel: 'Cancelled',
+          customerDescription: 'This service request was cancelled.',
+          category: 'CANCELLED',
+        },
+      ],
       statusHistory: [
         {
-          status: TicketStatus.RECEIVED,
+          customerLabel: 'Received',
           changedAt: expect.any(String),
         },
       ],
@@ -496,6 +528,10 @@ describe('Tickets Module (e2e)', () => {
     expect('customerPhone' in res.body.data).toBe(false);
     expect('id' in res.body.data).toBe(false);
     expect('_id' in res.body.data).toBe(false);
+    expect('workflowId' in res.body.data).toBe(false);
+    expect('workflow' in res.body.data).toBe(false);
+    expect('status' in res.body.data).toBe(false);
+    expect('name' in res.body.data).toBe(false);
     expect('qrCodeDataUrl' in res.body.data).toBe(false);
     expect('changedBy' in res.body.data.statusHistory[0]).toBe(false);
   });
@@ -507,6 +543,108 @@ describe('Tickets Module (e2e)', () => {
 
     expect(res.body.success).toBe(false);
     expect(res.body.error.code).toBe(ErrorCode.NOT_FOUND);
+  });
+
+  it(`GET /${API_PREFIX}/organizations/me/check-in-qr — returns counter check-in QR code and URL for tenant`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/organizations/me/check-in-qr`)
+      .set('Authorization', `Bearer ${secondOrgAdminAccessToken}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.checkInUrl).toContain('zenith-tailors');
+    expect(res.body.data.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+    expect(res.body.data.organizationName).toBeDefined();
+  });
+
+  it(`GET /${API_PREFIX}/public/:orgSlug/intake — returns public check-in info and active workflows`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/intake`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.organizationName).toBeDefined();
+    expect(res.body.data.orgSlug).toBe(orgSlug);
+    expect(Array.isArray(res.body.data.workflows)).toBe(true);
+    expect(res.body.data.workflows.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it(`POST /${API_PREFIX}/public/:orgSlug/tickets — allows customer self-check-in to create ticket and get code`, async () => {
+    const payload = {
+      customerName: 'Self-Serve Customer',
+      customerPhone: '+15559876543',
+      itemDescription: 'Rear brake caliper replacement',
+    };
+
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/public/${orgSlug}/tickets`)
+      .send(payload)
+      .expect(201);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.code).toMatch(/^TK-/);
+    expect(res.body.data.customerName).toBe('Self-Serve Customer');
+    expect(res.body.data.itemDescription).toBe('Rear brake caliper replacement');
+    expect(res.body.data.stages).toBeDefined();
+
+    // Verify it is immediately accessible via public status endpoint
+    const statusRes = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/tickets/${res.body.data.code}`)
+      .expect(200);
+
+    expect(statusRes.body.data.code).toBe(res.body.data.code);
+  });
+
+  it(`POST /${API_PREFIX}/public/:orgSlug/tickets — rejects invalid phone with 400 VALIDATION_ERROR`, async () => {
+    const res = await request(app.getHttpServer())
+      .post(`/${API_PREFIX}/public/${orgSlug}/tickets`)
+      .send({
+        customerName: 'Invalid Phone User',
+        customerPhone: 'bad-phone',
+        itemDescription: 'Repair check',
+      })
+      .expect(400);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe(ErrorCode.VALIDATION_ERROR);
+  });
+
+  it(`GET /${API_PREFIX}/public/:orgSlug/info — returns organization public info`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/info`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toMatchObject({
+      organizationName: 'Apex Bike Repair',
+      orgSlug: orgSlug,
+    });
+  });
+
+  it(`GET /${API_PREFIX}/public/:orgSlug/lookup — finds tickets by code or phone number`, async () => {
+    // Lookup by exact code
+    const codeRes = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/lookup?query=PUB-001`)
+      .expect(200);
+
+    expect(codeRes.body.success).toBe(true);
+    expect(Array.isArray(codeRes.body.data)).toBe(true);
+    expect(codeRes.body.data[0].code).toBe('PUB-001');
+
+    // Lookup by phone number
+    const phoneRes = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/lookup?query=555-9999`)
+      .expect(200);
+
+    expect(phoneRes.body.success).toBe(true);
+    expect(phoneRes.body.data.length).toBeGreaterThanOrEqual(1);
+
+    // Lookup nonexistent returns 404
+    const notFoundRes = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/lookup?query=NONEXISTENT-CODE`)
+      .expect(404);
+
+    expect(notFoundRes.body.success).toBe(false);
   });
 
   it(`GET /${API_PREFIX}/public/:orgSlug/tickets/:code — returns 404 NOT_FOUND when organization is SUSPENDED`, async () => {

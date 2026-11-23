@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { StatusCategory } from '@trackit/types';
 import { BaseRepository } from '../../common/database/base.repository';
 import { ACTIVE_TICKET_STATUSES } from './ticket.constants';
 import { Ticket, TicketDocument } from './ticket.schema';
@@ -25,7 +26,45 @@ export class TicketsRepository extends BaseRepository<TicketDocument> {
     return this.model
       .countDocuments({
         organizationId: orgObjectId,
-        status: { $in: ACTIVE_TICKET_STATUSES },
+        $or: [
+          {
+            statusCategory: {
+              $in: [
+                StatusCategory.INITIAL,
+                StatusCategory.IN_PROGRESS,
+                StatusCategory.READY,
+              ],
+            },
+          },
+          {
+            $or: [
+              { statusCategory: { $exists: false } },
+              { statusCategory: null },
+            ],
+            status: { $in: ACTIVE_TICKET_STATUSES },
+          },
+        ],
+      })
+      .exec();
+  }
+
+  async countByWorkflow(
+    organizationId: string | Types.ObjectId,
+    workflowId: string | Types.ObjectId,
+  ): Promise<number> {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+    const wfObjectId =
+      typeof workflowId === 'string'
+        ? new Types.ObjectId(workflowId)
+        : workflowId;
+
+    return this.model
+      .countDocuments({
+        organizationId: orgObjectId,
+        workflowId: wfObjectId,
       })
       .exec();
   }
@@ -43,5 +82,94 @@ export class TicketsRepository extends BaseRepository<TicketDocument> {
       organizationId: orgObjectId,
       code: code.trim().toUpperCase(),
     });
+  }
+
+  async findByOrgAndPhone(
+    organizationId: string | Types.ObjectId,
+    phone: string,
+  ): Promise<TicketDocument[]> {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+
+    return this.find(
+      {
+        organizationId: orgObjectId,
+        customerPhone: phone.trim(),
+      },
+      { sort: { createdAt: -1 }, limit: 10 },
+    );
+  }
+
+  async findLegacyTicketsByOrg(
+    organizationId: string | Types.ObjectId,
+  ): Promise<TicketDocument[]> {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+
+    return this.find({
+      organizationId: orgObjectId,
+      $or: [
+        { workflowId: null },
+        { workflowId: { $exists: false } },
+        { statusCategory: null },
+        { statusCategory: { $exists: false } },
+      ],
+    });
+  }
+
+  async backfillTicket(
+    ticketId: string | Types.ObjectId,
+    organizationId: string | Types.ObjectId,
+    workflowId: Types.ObjectId,
+    status: string,
+    statusCategory: StatusCategory,
+  ): Promise<TicketDocument | null> {
+    const tId =
+      typeof ticketId === 'string' ? new Types.ObjectId(ticketId) : ticketId;
+    const orgId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+
+    return this.model
+      .findOneAndUpdate(
+        { _id: tId, organizationId: orgId },
+        { $set: { workflowId, status, statusCategory } },
+        { new: true },
+      )
+      .exec();
+  }
+
+  async hasTicketsWithStatus(
+    organizationId: string | Types.ObjectId,
+    workflowId: string | Types.ObjectId,
+    statusKey: string,
+  ): Promise<boolean> {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+    const wfObjectId =
+      typeof workflowId === 'string'
+        ? new Types.ObjectId(workflowId)
+        : workflowId;
+    const normalizedKey = statusKey.trim().toUpperCase();
+
+    const count = await this.model
+      .countDocuments({
+        organizationId: orgObjectId,
+        workflowId: wfObjectId,
+        $or: [
+          { status: normalizedKey },
+          { 'statusHistory.status': normalizedKey },
+        ],
+      })
+      .exec();
+
+    return count > 0;
   }
 }

@@ -1,3 +1,4 @@
+import QRCode from 'qrcode';
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, QueryFilter } from 'mongoose';
@@ -5,6 +6,7 @@ import { OrgStatus, Role } from '@trackit/types';
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
+import { AppConfigService } from '../../config/app-config.service';
 import { PlatformSettingsService } from '../platform-settings/platform-settings.service';
 import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { UsersService } from '../users/user.service';
@@ -22,6 +24,7 @@ export class OrganizationsService {
     private readonly usersService: UsersService,
     private readonly platformSettingsService: PlatformSettingsService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly appConfigService: AppConfigService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -282,5 +285,56 @@ export class OrganizationsService {
       $set: { status: OrgStatus.ACTIVE },
     });
     return updated!;
+  }
+
+  async getCheckInQr(orgId: string): Promise<{
+    checkInUrl: string;
+    qrCodeDataUrl: string;
+    organizationName: string;
+    orgSlug: string;
+  }> {
+    const org = await this.getById(orgId);
+    if (!org) {
+      throw new AppException(
+        HttpStatus.NOT_FOUND,
+        ErrorCode.NOT_FOUND,
+        ErrorMessages[ErrorCode.NOT_FOUND],
+      );
+    }
+
+    const checkInUrl = `${this.appConfigService.corsOrigin}/${org.slug}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(checkInUrl, {
+      width: 400,
+      margin: 2,
+    });
+
+    return {
+      checkInUrl,
+      qrCodeDataUrl,
+      organizationName: org.name,
+      orgSlug: org.slug,
+    };
+  }
+
+  async getCheckInQrForSuperadmin(orgId: string): Promise<{
+    checkInUrl: string;
+    qrCodeDataUrl: string;
+    organizationName: string;
+    orgSlug: string;
+  }> {
+    const org = await this.getByIdForSuperadmin(orgId);
+
+    const checkInUrl = `${this.appConfigService.corsOrigin}/${org.slug}`;
+    const qrCodeDataUrl = await QRCode.toDataURL(checkInUrl, {
+      width: 400,
+      margin: 2,
+    });
+
+    return {
+      checkInUrl,
+      qrCodeDataUrl,
+      organizationName: org.name,
+      orgSlug: org.slug,
+    };
   }
 }

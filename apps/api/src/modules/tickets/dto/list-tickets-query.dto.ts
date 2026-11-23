@@ -1,17 +1,22 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { TicketStatus } from '@trackit/types';
+import { IsMongoId, IsOptional, IsString } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import { TICKETS_DTO_SWAGGER } from '../ticket.constants';
 
 export class ListTicketsQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     description: TICKETS_DTO_SWAGGER.STATUS_QUERY_DESCRIPTION,
-    enum: TicketStatus,
   })
   @IsOptional()
-  @IsEnum(TicketStatus)
-  status?: TicketStatus;
+  @IsString()
+  status?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter tickets by associated workflow ID',
+  })
+  @IsOptional()
+  @IsMongoId()
+  workflowId?: string;
 
   @ApiPropertyOptional({
     description: TICKETS_DTO_SWAGGER.SEARCH_QUERY_DESCRIPTION,
@@ -20,3 +25,4 @@ export class ListTicketsQueryDto extends PaginationQueryDto {
   @IsString()
   search?: string;
 }
+

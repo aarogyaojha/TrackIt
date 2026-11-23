@@ -451,4 +451,38 @@ describe('Superadmin & Platform Management (e2e)', () => {
     expect(res.body.data.organization.slug).not.toBe('dashboard');
     expect(res.body.data.organization.slug).toBe('dashboard-1');
   });
+
+  it(`GET /${API_PREFIX}/organizations/:id/check-in-qr — superadmin can fetch customer check-in QR for any org`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/organizations/${secondOrgId}/check-in-qr`)
+      .set('Authorization', `Bearer ${superadminAccessToken}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(res.body.data).toMatchObject({
+      organizationName: 'Direct Active Tailors',
+      orgSlug: 'direct-active-tailors',
+      checkInUrl: 'http://localhost:3000/direct-active-tailors',
+    });
+    expect(res.body.data.qrCodeDataUrl).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it(`GET /${API_PREFIX}/organizations/:id/check-in-qr — non-superadmin caller receives 403 FORBIDDEN`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/organizations/${secondOrgId}/check-in-qr`)
+      .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+      .expect(403);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.error.code).toBe('FORBIDDEN');
+  });
+
+  it(`GET /${API_PREFIX}/organizations/:id/check-in-qr — malformed organization id returns 400 VALIDATION_ERROR`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/organizations/not-a-valid-id/check-in-qr`)
+      .set('Authorization', `Bearer ${superadminAccessToken}`)
+      .expect(400);
+
+    expect(res.body.success).toBe(false);
+  });
 });

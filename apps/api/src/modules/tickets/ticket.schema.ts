@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema, Types } from 'mongoose';
-import { TicketStatus } from '@trackit/types';
+import { StatusCategory } from '@trackit/types';
 import { toJsonTransform } from '../../common/database/schema-options';
 
 export type TicketDocument = HydratedDocument<Ticket>;
@@ -9,10 +9,10 @@ export type TicketDocument = HydratedDocument<Ticket>;
 export class TicketStatusHistoryItem {
   @Prop({
     type: String,
-    enum: TicketStatus,
     required: true,
+    trim: true,
   })
-  status: TicketStatus;
+  status: string;
 
   @Prop({
     type: Date,
@@ -24,9 +24,9 @@ export class TicketStatusHistoryItem {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   })
-  changedBy: Types.ObjectId;
+  changedBy?: Types.ObjectId;
 }
 
 export const TicketStatusHistoryItemSchema =
@@ -46,6 +46,14 @@ export class Ticket {
     index: true,
   })
   organizationId: Types.ObjectId;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Workflow',
+    required: false,
+    index: true,
+  })
+  workflowId?: Types.ObjectId;
 
   @Prop({
     type: String,
@@ -78,11 +86,19 @@ export class Ticket {
 
   @Prop({
     type: String,
-    enum: TicketStatus,
-    default: TicketStatus.RECEIVED,
     required: true,
+    trim: true,
+    default: 'received',
   })
-  status: TicketStatus;
+  status: string;
+
+  @Prop({
+    type: String,
+    enum: StatusCategory,
+    required: false,
+    index: true,
+  })
+  statusCategory?: StatusCategory;
 
   @Prop({
     type: [TicketStatusHistoryItemSchema],
@@ -93,9 +109,9 @@ export class Ticket {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'User',
-    required: true,
+    required: false,
   })
-  createdBy: Types.ObjectId;
+  createdBy?: Types.ObjectId;
 
   createdAt?: Date;
   updatedAt?: Date;
@@ -104,3 +120,4 @@ export class Ticket {
 export const TicketSchema = SchemaFactory.createForClass(Ticket);
 
 TicketSchema.index({ organizationId: 1, code: 1 }, { unique: true });
+TicketSchema.index({ organizationId: 1, workflowId: 1 });

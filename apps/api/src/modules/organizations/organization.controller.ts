@@ -39,7 +39,9 @@ import { OrganizationsService } from './organization.service';
 @ApiTags(ORGANIZATIONS_SWAGGER.TAG)
 @Controller('organizations')
 export class OrganizationsController {
-  constructor(private readonly organizationsService: OrganizationsService) {}
+  constructor(
+    private readonly organizationsService: OrganizationsService,
+  ) {}
 
   @Public()
   @Throttle({
@@ -92,6 +94,25 @@ export class OrganizationsController {
     }
 
     return toOrganizationResponse(org);
+  }
+
+  @Get('me/check-in-qr')
+  @UseGuards(TenantGuard)
+  @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
+  @ApiOperation({
+    summary: ORGANIZATIONS_SWAGGER.GET_CHECK_IN_QR_SUMMARY,
+    description: ORGANIZATIONS_SWAGGER.GET_CHECK_IN_QR_DESCRIPTION,
+  })
+  @ApiOkResponse({
+    description: ORGANIZATIONS_SWAGGER.GET_CHECK_IN_QR_OK_DESCRIPTION,
+  })
+  @ApiStandardErrors(
+    ErrorCode.UNAUTHORIZED,
+    ErrorCode.FORBIDDEN,
+    ErrorCode.NOT_FOUND,
+  )
+  async getCheckInQr(@CurrentOrg() orgId: string) {
+    return this.organizationsService.getCheckInQr(orgId);
   }
 
   @Get()
@@ -148,6 +169,26 @@ export class OrganizationsController {
   async getById(@Param('id', ParseObjectIdPipe) id: string) {
     const org = await this.organizationsService.getByIdForSuperadmin(id);
     return toOrganizationResponse(org);
+  }
+
+  @Get(':id/check-in-qr')
+  @SuperAdminOnly()
+  @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
+  @ApiOperation({
+    summary: ORGANIZATIONS_SWAGGER.GET_ORG_QR_BY_ID_SUMMARY,
+    description: ORGANIZATIONS_SWAGGER.GET_ORG_QR_BY_ID_DESCRIPTION,
+  })
+  @ApiOkResponse({
+    description: ORGANIZATIONS_SWAGGER.GET_ORG_QR_BY_ID_OK_DESCRIPTION,
+  })
+  @ApiStandardErrors(
+    ErrorCode.VALIDATION_ERROR,
+    ErrorCode.UNAUTHORIZED,
+    ErrorCode.FORBIDDEN,
+    ErrorCode.NOT_FOUND,
+  )
+  async getCheckInQrById(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.organizationsService.getCheckInQrForSuperadmin(id);
   }
 
   @Post(':id/approve')

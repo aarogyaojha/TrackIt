@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  IsMongoId,
   IsNotEmpty,
+  IsOptional,
   IsString,
   Length,
   Matches,
@@ -17,6 +19,14 @@ import {
 } from '../ticket.constants';
 
 export class CreateTicketDto {
+  @ApiPropertyOptional({
+    description: 'ID of the workflow defining the status lifecycle for this ticket',
+    example: '60c72b2f9b1d8b2bad8e8910',
+  })
+  @IsOptional()
+  @IsMongoId()
+  workflowId?: string;
+
   @ApiProperty({
     description: TICKETS_DTO_SWAGGER.CODE_DESCRIPTION,
     example: TICKETS_DTO_SWAGGER.CODE_EXAMPLE,

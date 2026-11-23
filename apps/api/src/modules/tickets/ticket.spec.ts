@@ -1,13 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Types } from 'mongoose';
-import { OrgStatus, TicketStatus } from '@trackit/types';
+import { OrgStatus, StatusCategory, TicketStatus } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
-import { ErrorCode } from '../../constants';
+import { ErrorCode, ErrorMessages } from '../../constants';
 import { OrganizationDocument } from '../organizations/organization.schema';
 import { OrganizationsService } from '../organizations/organization.service';
 import { SubscriptionDocument } from '../subscriptions/subscription.schema';
 import { SubscriptionsService } from '../subscriptions/subscription.service';
+import { WorkflowDocument } from '../workflows/workflow.schema';
+import { WorkflowsService } from '../workflows/workflow.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
 import { TicketsRepository } from './ticket.repository';
@@ -61,6 +63,19 @@ describe('TicketsService', () => {
     status: OrgStatus.ACTIVE,
   } as unknown as OrganizationDocument;
 
+  const mockDefaultWorkflow = {
+    _id: new Types.ObjectId(),
+    name: 'Default Workflow',
+    isDefault: true,
+    statuses: [
+      { key: TicketStatus.RECEIVED, name: 'Received', category: StatusCategory.INITIAL, order: 0 },
+      { key: TicketStatus.IN_PROGRESS, name: 'In Progress', category: StatusCategory.IN_PROGRESS, order: 1 },
+      { key: TicketStatus.READY, name: 'Ready', category: StatusCategory.READY, order: 2 },
+      { key: TicketStatus.DELIVERED, name: 'Delivered', category: StatusCategory.COMPLETED, order: 3 },
+      { key: TicketStatus.CANCELLED, name: 'Cancelled', category: StatusCategory.CANCELLED, order: 4 },
+    ],
+  };
+
   beforeEach(async () => {
     const mockRepo: Partial<jest.Mocked<TicketsRepository>> = {
       create: jest.fn(),
@@ -70,6 +85,7 @@ describe('TicketsService', () => {
       updateById: jest.fn(),
       countActiveByOrganization: jest.fn(),
       findByOrgAndCode: jest.fn(),
+      findByOrgAndPhone: jest.fn(),
     };
 
     const mockOrgsSvc: Partial<jest.Mocked<OrganizationsService>> = {
@@ -81,6 +97,18 @@ describe('TicketsService', () => {
       getByOrganizationId: jest.fn(),
       assertPlanLimit: jest.fn(),
       incrementTicketsThisMonth: jest.fn(),
+    };
+
+    const mockWfSvc: Partial<jest.Mocked<WorkflowsService>> = {
+      getDefaultWorkflow: jest
+        .fn()
+        .mockResolvedValue(mockDefaultWorkflow as unknown as WorkflowDocument),
+      getByIdScoped: jest
+        .fn()
+        .mockResolvedValue(mockDefaultWorkflow as unknown as WorkflowDocument),
+      listByOrg: jest
+        .fn()
+        .mockResolvedValue([{ ...mockDefaultWorkflow, isActive: true } as unknown as WorkflowDocument]),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -97,6 +125,10 @@ describe('TicketsService', () => {
         {
           provide: SubscriptionsService,
           useValue: mockSubsSvc,
+        },
+        {
+          provide: WorkflowsService,
+          useValue: mockWfSvc,
         },
       ],
     }).compile();
@@ -434,6 +466,7 @@ describe('TicketsService', () => {
       expect(result).toEqual({
         ticket,
         orgName: 'Apex Bike Shop',
+        workflow: mockDefaultWorkflow,
       });
       expect(organizationsService.getBySlug).toHaveBeenCalledWith('apex-bikes');
       expect(ticketsRepository.findByOrgAndCode).toHaveBeenCalledWith(
@@ -490,6 +523,196 @@ describe('TicketsService', () => {
           }),
         }),
       );
+    });
+  });
+
+  describe('getPublicIntakeInfo', () => {
+    it('returns organization public intake info and active workflows', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+
+      const result = await service.getPublicIntakeInfo('apex-bikes');
+
+      expect(result).toEqual({
+        organizationName: 'Apex Bike Shop',
+        orgSlug: 'apex-bikes',
+        workflows: [
+          expect.objectContaining({
+            name: 'Default Workflow',
+            isDefault: true,
+          }),
+        ],
+      });
+    });
+
+    it('throws NOT_FOUND if org does not exist or is suspended', async () => {
+      organizationsService.getBySlug.mockResolvedValue(null);
+
+      await expect(service.getPublicIntakeInfo('unknown')).rejects.toThrow(
+        expect.objectContaining({
+          status: HttpStatus.NOT_FOUND,
+          response: expect.objectContaining({ code: ErrorCode.NOT_FOUND }),
+        }),
+      );
+    });
+  });
+
+  describe('createPublicTicket', () => {
+    const publicDto = {
+      customerName: 'Jane Public',
+      customerPhone: '+15551234567',
+      itemDescription: 'Chain slipping in 4th gear',
+    };
+
+    it('successfully creates a ticket through public intake with an auto-generated code', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      subscriptionsService.getByOrganizationId.mockResolvedValue(mockSubscription);
+      ticketsRepository.countActiveByOrganization.mockResolvedValue(2);
+      ticketsRepository.findByOrgAndCode.mockResolvedValue(null);
+      ticketsRepository.create.mockResolvedValue(
+        mockTicketDoc({
+          code: 'TK-A2B3C4',
+          customerName: publicDto.customerName,
+          customerPhone: publicDto.customerPhone,
+          itemDescription: publicDto.itemDescription,
+          createdBy: undefined,
+        }),
+      );
+
+      const result = await service.createPublicTicket('apex-bikes', publicDto);
+
+      expect(result.orgName).toBe('Apex Bike Shop');
+      expect(result.ticket.code).toBe('TK-A2B3C4');
+      expect(subscriptionsService.incrementTicketsThisMonth).toHaveBeenCalledWith(mockOrgId);
+      expect(ticketsRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: mockOrgId,
+          customerName: 'Jane Public',
+          customerPhone: '+15551234567',
+          itemDescription: 'Chain slipping in 4th gear',
+        }),
+      );
+    });
+
+    it('recovers from collision when candidate code already exists', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      subscriptionsService.getByOrganizationId.mockResolvedValue(mockSubscription);
+      ticketsRepository.countActiveByOrganization.mockResolvedValue(1);
+
+      // First code exists, second code is unique
+      ticketsRepository.findByOrgAndCode
+        .mockResolvedValueOnce(mockTicketDoc())
+        .mockResolvedValueOnce(null);
+
+      ticketsRepository.create.mockResolvedValue(
+        mockTicketDoc({
+          code: 'TK-UNIQUE',
+          customerName: publicDto.customerName,
+        }),
+      );
+
+      const result = await service.createPublicTicket('apex-bikes', publicDto);
+
+      expect(result.ticket.code).toBe('TK-UNIQUE');
+      expect(ticketsRepository.create).toHaveBeenCalled();
+    });
+
+    it('asserts plan limits and throws 409 if active tickets limit is exceeded', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      subscriptionsService.getByOrganizationId.mockResolvedValue(mockSubscription);
+      ticketsRepository.countActiveByOrganization.mockResolvedValue(10);
+      subscriptionsService.assertPlanLimit.mockImplementation(
+        (_orgId, limitKey, current) => {
+          if (limitKey === 'maxActiveTickets' && current >= 10) {
+            throw new AppException(
+              HttpStatus.CONFLICT,
+              ErrorCode.PLAN_LIMIT_EXCEEDED,
+              ErrorMessages[ErrorCode.PLAN_LIMIT_EXCEEDED],
+            );
+          }
+          return Promise.resolve();
+        },
+      );
+
+      await expect(
+        service.createPublicTicket('apex-bikes', publicDto),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          status: HttpStatus.CONFLICT,
+          response: expect.objectContaining({
+            code: ErrorCode.PLAN_LIMIT_EXCEEDED,
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('getPublicOrgInfo', () => {
+    it('returns organization name and slug for active organization', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+
+      const result = await service.getPublicOrgInfo('apex-bikes');
+
+      expect(result).toEqual({
+        organizationName: 'Apex Bike Shop',
+        orgSlug: 'apex-bikes',
+      });
+    });
+
+    it('throws 404 NOT_FOUND if organization is not active or missing', async () => {
+      organizationsService.getBySlug.mockResolvedValue(null);
+
+      await expect(service.getPublicOrgInfo('unknown-org')).rejects.toThrow(
+        AppException,
+      );
+    });
+  });
+
+  describe('lookupPublic', () => {
+    it('finds ticket by exact code', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      ticketsRepository.findByOrgAndCode.mockResolvedValue(
+        mockTicketDoc({ code: 'TK-123456' }),
+      );
+
+      const result = await service.lookupPublic('apex-bikes', 'TK-123456');
+
+      expect(result.tickets).toHaveLength(1);
+      expect(result.tickets[0].ticket.code).toBe('TK-123456');
+    });
+
+    it('finds ticket by code without TK- prefix', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      ticketsRepository.findByOrgAndCode
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(mockTicketDoc({ code: 'TK-123456' }));
+
+      const result = await service.lookupPublic('apex-bikes', '123456');
+
+      expect(result.tickets).toHaveLength(1);
+      expect(result.tickets[0].ticket.code).toBe('TK-123456');
+    });
+
+    it('finds ticket by customer phone number when not found by code', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      ticketsRepository.findByOrgAndCode.mockResolvedValue(null);
+      ticketsRepository.findByOrgAndPhone.mockResolvedValue([
+        mockTicketDoc({ code: 'TK-PHONE1', customerPhone: '+15551234567' }),
+      ]);
+
+      const result = await service.lookupPublic('apex-bikes', '+15551234567');
+
+      expect(result.tickets).toHaveLength(1);
+      expect(result.tickets[0].ticket.code).toBe('TK-PHONE1');
+    });
+
+    it('throws 404 NOT_FOUND if no tickets match code or phone', async () => {
+      organizationsService.getBySlug.mockResolvedValue(mockOrg);
+      ticketsRepository.findByOrgAndCode.mockResolvedValue(null);
+      ticketsRepository.findByOrgAndPhone.mockResolvedValue([]);
+
+      await expect(
+        service.lookupPublic('apex-bikes', 'nonexistent'),
+      ).rejects.toThrow(AppException);
     });
   });
 });

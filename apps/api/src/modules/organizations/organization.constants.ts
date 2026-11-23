@@ -16,6 +16,18 @@ export const ORGANIZATIONS_SWAGGER = {
   GET_BY_ID_SUMMARY: 'Get organization by ID (Superadmin only)',
   GET_BY_ID_DESCRIPTION: 'Fetches details of a specific organization by its ID.',
   GET_BY_ID_OK_DESCRIPTION: 'Organization details retrieved successfully.',
+  GET_CHECK_IN_QR_SUMMARY:
+    'Get organization customer check-in QR code and URL',
+  GET_CHECK_IN_QR_DESCRIPTION:
+    'Retrieves printable counter QR code and public check-in URL for walk-in customers.',
+  GET_CHECK_IN_QR_OK_DESCRIPTION:
+    'Counter check-in QR code and URL retrieved successfully.',
+  GET_ORG_QR_BY_ID_SUMMARY:
+    'Get organization customer check-in QR code and URL (Superadmin only)',
+  GET_ORG_QR_BY_ID_DESCRIPTION:
+    'Retrieves printable counter QR code and public check-in URL for any organization by ID.',
+  GET_ORG_QR_BY_ID_OK_DESCRIPTION:
+    'Organization counter check-in QR code and URL retrieved successfully.',
   APPROVE_SUMMARY: 'Approve a pending organization (Superadmin only)',
   APPROVE_DESCRIPTION:
     'Transitions an organization status from PENDING to ACTIVE.',
