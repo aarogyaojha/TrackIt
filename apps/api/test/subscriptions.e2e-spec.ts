@@ -153,6 +153,7 @@ describe('Plans & Subscriptions (e2e)', () => {
         staffUsers: 1,
         ticketsThisMonth: 0,
         activeTickets: 0,
+        workflows: 0,
       },
     });
     expect('_id' in res.body.data).toBe(false);
@@ -173,6 +174,7 @@ describe('Plans & Subscriptions (e2e)', () => {
         staffUsers: 1,
         ticketsThisMonth: 0,
         activeTickets: 0,
+        workflows: 0,
       },
     });
   });
@@ -202,6 +204,7 @@ describe('Plans & Subscriptions (e2e)', () => {
         staffUsers: 1,
         ticketsThisMonth: 0,
         activeTickets: 0,
+        workflows: 0,
       },
     });
   });
@@ -241,6 +244,7 @@ describe('Plans & Subscriptions (e2e)', () => {
       maxStaffUsers: 2,
       maxTicketsPerMonth:
         DEFAULT_PLAN_LIMITS[PlanTier.FREE].maxTicketsPerMonth,
+      maxWorkflows: DEFAULT_PLAN_LIMITS[PlanTier.FREE].maxWorkflows,
     });
     expect('_id' in res.body.data).toBe(false);
     expect('__v' in res.body.data).toBe(false);

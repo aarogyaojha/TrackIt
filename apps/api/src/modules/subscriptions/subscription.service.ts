@@ -1,10 +1,12 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ClientSession, Types } from 'mongoose';
 import { PlanLimits, PlanTier } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { PlansService } from '../plans/plan.service';
+import { TicketsRepository } from '../tickets/ticket.repository';
 import { UsersRepository } from '../users/user.repository';
+import { WorkflowsRepository } from '../workflows/workflow.repository';
 import { SubscriptionSummaryResponse } from './subscription.response';
 import { SubscriptionsRepository } from './subscription.repository';
 import { SubscriptionDocument } from './subscription.schema';
@@ -15,6 +17,10 @@ export class SubscriptionsService {
     private readonly subscriptionsRepository: SubscriptionsRepository,
     private readonly plansService: PlansService,
     private readonly usersRepository: UsersRepository,
+    @Inject(forwardRef(() => WorkflowsRepository))
+    private readonly workflowsRepository: WorkflowsRepository,
+    @Inject(forwardRef(() => TicketsRepository))
+    private readonly ticketsRepository?: TicketsRepository,
   ) {}
 
   async createDefaultSubscription(
@@ -77,6 +83,11 @@ export class SubscriptionsService {
     const plan = await this.plansService.getByTier(subscription.planTier);
     const staffCount =
       await this.usersRepository.countByOrganizationId(organizationId);
+    const workflowsCount =
+      await this.workflowsRepository.countByOrg(organizationId);
+    const activeTicketsCount = this.ticketsRepository
+      ? await this.ticketsRepository.countActiveByOrganization(organizationId)
+      : 0;
 
     return {
       planTier: subscription.planTier,
@@ -84,8 +95,8 @@ export class SubscriptionsService {
       usage: {
         staffUsers: staffCount,
         ticketsThisMonth: subscription.ticketsThisMonth,
-        // Active tickets is hardcoded to 0 for now as the Tickets module is implemented in Phase 6.
-        activeTickets: 0,
+        activeTickets: activeTicketsCount,
+        workflows: workflowsCount,
       },
     };
   }

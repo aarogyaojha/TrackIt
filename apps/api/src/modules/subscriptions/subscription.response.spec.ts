@@ -12,11 +12,13 @@ describe('toSubscriptionSummaryResponse', () => {
         maxActiveTickets: 10,
         maxStaffUsers: 2,
         maxTicketsPerMonth: 30,
+        maxWorkflows: 1,
       },
       usage: {
         staffUsers: 1,
         ticketsThisMonth: 5,
         activeTickets: 0,
+        workflows: 1,
       },
       _id: 'fake-id',
       __v: 0,
@@ -30,11 +32,13 @@ describe('toSubscriptionSummaryResponse', () => {
         maxActiveTickets: 10,
         maxStaffUsers: 2,
         maxTicketsPerMonth: 30,
+        maxWorkflows: 1,
       },
       usage: {
         staffUsers: 1,
         ticketsThisMonth: 5,
         activeTickets: 0,
+        workflows: 1,
       },
     });
 

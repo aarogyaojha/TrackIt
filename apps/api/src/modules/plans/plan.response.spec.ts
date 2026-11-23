@@ -15,6 +15,7 @@ describe('toPlanResponse', () => {
         maxActiveTickets: 50,
         maxStaffUsers: 5,
         maxTicketsPerMonth: 200,
+        maxWorkflows: 3,
       },
       updatedAt,
       __v: 0,
@@ -28,6 +29,7 @@ describe('toPlanResponse', () => {
         maxActiveTickets: 50,
         maxStaffUsers: 5,
         maxTicketsPerMonth: 200,
+        maxWorkflows: 3,
       },
       updatedAt,
     });

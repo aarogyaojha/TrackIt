@@ -43,6 +43,8 @@ export class PlansService {
         partialLimits.maxStaffUsers ?? current.limits.maxStaffUsers,
       maxTicketsPerMonth:
         partialLimits.maxTicketsPerMonth ?? current.limits.maxTicketsPerMonth,
+      maxWorkflows:
+        partialLimits.maxWorkflows ?? current.limits.maxWorkflows,
     };
 
     const updated = await this.plansRepository.updateById(

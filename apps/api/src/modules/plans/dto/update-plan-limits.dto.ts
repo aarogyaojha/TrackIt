@@ -29,4 +29,13 @@ export class UpdatePlanLimitsDto {
   @IsInt()
   @Min(0)
   maxTicketsPerMonth?: number;
+
+  @ApiPropertyOptional({
+    description: PLANS_DTO_SWAGGER.MAX_WORKFLOWS_DESCRIPTION,
+    example: PLANS_DTO_SWAGGER.MAX_WORKFLOWS_EXAMPLE,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  maxWorkflows?: number;
 }

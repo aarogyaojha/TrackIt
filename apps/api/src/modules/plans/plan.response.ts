@@ -14,6 +14,7 @@ export function toPlanResponse(plan: PlanDocument): PlanResponse {
       maxActiveTickets: plan.limits.maxActiveTickets,
       maxStaffUsers: plan.limits.maxStaffUsers,
       maxTicketsPerMonth: plan.limits.maxTicketsPerMonth,
+      maxWorkflows: plan.limits.maxWorkflows,
     },
     updatedAt: plan.updatedAt,
   };

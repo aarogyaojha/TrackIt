@@ -5,16 +5,19 @@ export const DEFAULT_PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     maxActiveTickets: 10,
     maxStaffUsers: 2,
     maxTicketsPerMonth: 30,
+    maxWorkflows: 1,
   },
   [PlanTier.BASIC]: {
     maxActiveTickets: 50,
     maxStaffUsers: 5,
     maxTicketsPerMonth: 200,
+    maxWorkflows: 3,
   },
   [PlanTier.PRO]: {
     maxActiveTickets: 500,
     maxStaffUsers: 25,
     maxTicketsPerMonth: 2000,
+    maxWorkflows: 10,
   },
 };
 
@@ -39,4 +42,6 @@ export const PLANS_DTO_SWAGGER = {
   MAX_TICKETS_PER_MONTH_DESCRIPTION:
     'Maximum number of tickets allowed to be created per month',
   MAX_TICKETS_PER_MONTH_EXAMPLE: 200,
+  MAX_WORKFLOWS_DESCRIPTION: 'Maximum number of workflows allowed for the organization',
+  MAX_WORKFLOWS_EXAMPLE: 3,
 } as const;

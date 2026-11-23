@@ -4,6 +4,7 @@ export interface SubscriptionUsage {
   staffUsers: number;
   ticketsThisMonth: number;
   activeTickets: number;
+  workflows: number;
 }
 
 export interface SubscriptionSummaryResponse {
@@ -26,11 +27,13 @@ export function toSubscriptionSummaryResponse(
       maxActiveTickets: summary.limits.maxActiveTickets,
       maxStaffUsers: summary.limits.maxStaffUsers,
       maxTicketsPerMonth: summary.limits.maxTicketsPerMonth,
+      maxWorkflows: summary.limits.maxWorkflows,
     },
     usage: {
       staffUsers: summary.usage.staffUsers,
       ticketsThisMonth: summary.usage.ticketsThisMonth,
       activeTickets: summary.usage.activeTickets,
+      workflows: summary.usage.workflows,
     },
   };
 }

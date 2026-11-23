@@ -100,6 +100,7 @@ describe('PlansService', () => {
           maxActiveTickets: 500,
           maxStaffUsers: 25,
           maxTicketsPerMonth: 2000,
+          maxWorkflows: 10,
         },
       });
       const updatedPlan = mockPlanDoc(PlanTier.PRO, {
@@ -107,6 +108,7 @@ describe('PlansService', () => {
           maxActiveTickets: 600,
           maxStaffUsers: 25,
           maxTicketsPerMonth: 2000,
+          maxWorkflows: 10,
         },
       });
 
@@ -126,6 +128,7 @@ describe('PlansService', () => {
               maxActiveTickets: 600,
               maxStaffUsers: 25,
               maxTicketsPerMonth: 2000,
+              maxWorkflows: 10,
             },
           },
         },

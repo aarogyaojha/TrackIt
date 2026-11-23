@@ -7,6 +7,8 @@ import { ErrorCode } from '../../constants';
 import { PlansService } from '../plans/plan.service';
 import { PlanDocument } from '../plans/plan.schema';
 import { UsersRepository } from '../users/user.repository';
+import { WorkflowsRepository } from '../workflows/workflow.repository';
+import { TicketsRepository } from '../tickets/ticket.repository';
 import { SubscriptionsRepository } from './subscription.repository';
 import { SubscriptionDocument } from './subscription.schema';
 import { SubscriptionsService } from './subscription.service';
@@ -16,6 +18,8 @@ describe('SubscriptionsService', () => {
   let subscriptionsRepository: jest.Mocked<SubscriptionsRepository>;
   let plansService: jest.Mocked<PlansService>;
   let usersRepository: jest.Mocked<UsersRepository>;
+  let workflowsRepository: jest.Mocked<WorkflowsRepository>;
+  let ticketsRepository: jest.Mocked<TicketsRepository>;
 
   const mockOrgId = new Types.ObjectId();
 
@@ -25,6 +29,7 @@ describe('SubscriptionsService', () => {
       maxActiveTickets: 10,
       maxStaffUsers: 2,
       maxTicketsPerMonth: 30,
+      maxWorkflows: 1,
     },
   ): PlanDocument =>
     ({
@@ -66,6 +71,14 @@ describe('SubscriptionsService', () => {
       countByOrganizationId: jest.fn(),
     };
 
+    const mockWorkflowsRepo: Partial<jest.Mocked<WorkflowsRepository>> = {
+      countByOrg: jest.fn().mockResolvedValue(1),
+    };
+
+    const mockTicketsRepo: Partial<jest.Mocked<TicketsRepository>> = {
+      countActiveByOrganization: jest.fn().mockResolvedValue(0),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SubscriptionsService,
@@ -81,6 +94,14 @@ describe('SubscriptionsService', () => {
           provide: UsersRepository,
           useValue: mockUsersRepo,
         },
+        {
+          provide: WorkflowsRepository,
+          useValue: mockWorkflowsRepo,
+        },
+        {
+          provide: TicketsRepository,
+          useValue: mockTicketsRepo,
+        },
       ],
     }).compile();
 
@@ -88,6 +109,8 @@ describe('SubscriptionsService', () => {
     subscriptionsRepository = module.get(SubscriptionsRepository);
     plansService = module.get(PlansService);
     usersRepository = module.get(UsersRepository);
+    workflowsRepository = module.get(WorkflowsRepository);
+    ticketsRepository = module.get(TicketsRepository);
   });
 
   describe('createDefaultSubscription', () => {
@@ -124,6 +147,7 @@ describe('SubscriptionsService', () => {
         maxActiveTickets: 50,
         maxStaffUsers: 5,
         maxTicketsPerMonth: 200,
+        maxWorkflows: 3,
       });
 
       subscriptionsRepository.findByOrganizationId.mockResolvedValue(
@@ -131,6 +155,7 @@ describe('SubscriptionsService', () => {
       );
       plansService.getByTier.mockResolvedValue(planDoc);
       usersRepository.countByOrganizationId.mockResolvedValue(3);
+      workflowsRepository.countByOrg.mockResolvedValue(2);
 
       const result = await service.getUsageSummary(mockOrgId);
 
@@ -140,11 +165,13 @@ describe('SubscriptionsService', () => {
           maxActiveTickets: 50,
           maxStaffUsers: 5,
           maxTicketsPerMonth: 200,
+          maxWorkflows: 3,
         },
         usage: {
           staffUsers: 3,
           ticketsThisMonth: 12,
           activeTickets: 0,
+          workflows: 2,
         },
       });
 
@@ -153,6 +180,10 @@ describe('SubscriptionsService', () => {
       );
       expect(plansService.getByTier).toHaveBeenCalledWith(PlanTier.BASIC);
       expect(usersRepository.countByOrganizationId).toHaveBeenCalledWith(
+        mockOrgId,
+      );
+      expect(workflowsRepository.countByOrg).toHaveBeenCalledWith(mockOrgId);
+      expect(ticketsRepository.countActiveByOrganization).toHaveBeenCalledWith(
         mockOrgId,
       );
     });

@@ -17,6 +17,9 @@ export class PlanLimitsSchemaClass implements PlanLimits {
 
   @Prop({ type: Number, required: true })
   maxTicketsPerMonth: number;
+
+  @Prop({ type: Number, required: true })
+  maxWorkflows: number;
 }
 
 export const PlanLimitsSchema =
