@@ -57,6 +57,7 @@ export const SUPERADMIN_COPY = {
       SLUG: 'Slug',
       STATUS: 'Status',
       CREATED: 'Created Date',
+      QR_CODE: 'Tracking QR',
       ACTIONS: 'Actions',
       VIEW_DETAILS: 'View Details',
     },
@@ -101,6 +102,29 @@ export const SUPERADMIN_COPY = {
       NOT_FOUND_DESCRIPTION:
         'The requested organization could not be found or has an invalid ID.',
     },
+    QR: {
+      SECTION_TITLE: 'Customer Tracking Portal QR Code',
+      SECTION_DESCRIPTION:
+        'View, download, or print the customer tracking portal QR code for this organization.',
+      VIEW_QR_BUTTON: 'View QR',
+      DIALOG_TITLE: 'Customer Tracking Portal QR Code',
+      DIALOG_DESCRIPTION:
+        'Customers scan this code to access the organization tracking portal and check real-time item status.',
+      DOWNLOAD_BUTTON: 'Download QR Image',
+      PRINT_BUTTON: 'Print Counter Stand',
+      COPY_URL_BUTTON: 'Copy Link',
+      COPIED_URL: 'Copied',
+      OPEN_PORTAL_BUTTON: 'Open Portal',
+      DOWNLOAD_SUCCESS: 'QR code image downloaded successfully.',
+      COPY_SUCCESS: 'Tracking portal link copied to clipboard.',
+      PORTAL_URL_LABEL: 'Public Tracking Portal URL',
+      CLOSE_BUTTON: 'Close',
+      TOOLTIP_LABEL: 'View & Download Tracking QR',
+      ERROR_TITLE: 'Failed to load QR code',
+      ERROR_DESCRIPTION:
+        'Could not retrieve the tracking portal QR code for this organization.',
+      RETRY_BUTTON: 'Try Again',
+    },
   },
   DIALOGS: {
     REJECT: {
@@ -132,6 +156,7 @@ export const SUPERADMIN_COPY = {
     MAX_ACTIVE_TICKETS: 'Max Active Tickets',
     MAX_STAFF_USERS: 'Max Staff Users',
     MAX_TICKETS_PER_MONTH: 'Max Tickets Per Month',
+    MAX_WORKFLOWS: 'Max Workflows',
     UNLIMITED_HINT: 'Use 0 for unlimited resources (if supported).',
     SAVE_BUTTON: 'Save Limits',
     SAVING: 'Saving...',

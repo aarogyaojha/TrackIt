@@ -13,6 +13,10 @@ export const updatePlanLimitsSchema = z.object({
     .number()
     .int('Must be an integer')
     .min(0, 'Must be at least 0'),
+  maxWorkflows: z.coerce
+    .number()
+    .int('Must be an integer')
+    .min(0, 'Must be at least 0'),
 });
 
 export type UpdatePlanLimitsFormData = z.infer<typeof updatePlanLimitsSchema>;

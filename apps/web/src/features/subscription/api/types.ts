@@ -4,6 +4,7 @@ export interface SubscriptionUsage {
   staffUsers: number;
   ticketsThisMonth: number;
   activeTickets: number;
+  workflows: number;
 }
 
 export interface SubscriptionSummaryResponse {

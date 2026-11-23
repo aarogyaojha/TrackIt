@@ -5,6 +5,7 @@ export const SUBSCRIPTION_COPY = {
   ACTIVE_TICKETS_LABEL: 'Active Tickets',
   STAFF_USERS_LABEL: 'Staff Members',
   TICKETS_THIS_MONTH_LABEL: 'Tickets Created This Month',
+  WORKFLOWS_LABEL: 'Workflows',
   UNLIMITED: 'Unlimited',
   LIMIT_WARNING: 'Approaching limit',
   LIMIT_EXCEEDED: 'Limit reached',

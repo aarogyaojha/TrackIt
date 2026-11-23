@@ -2,6 +2,7 @@ export * from './types';
 export * from './superadmin-keys';
 export * from './useOrganizationsList';
 export * from './useOrganization';
+export * from './useOrgCheckInQr';
 export * from './useOrgSubscription';
 export * from './useApproveOrg';
 export * from './useRejectOrg';

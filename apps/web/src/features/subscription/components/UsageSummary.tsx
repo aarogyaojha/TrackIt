@@ -65,6 +65,12 @@ export function UsageSummary() {
       usage: usage.ticketsThisMonth ?? 0,
       limit: limits.maxTicketsPerMonth,
     },
+    {
+      id: 'workflows',
+      label: SUBSCRIPTION_COPY.WORKFLOWS_LABEL,
+      usage: usage.workflows ?? 0,
+      limit: limits.maxWorkflows,
+    },
   ];
 
   const getTierBadgeVariant = (tier: PlanTier) => {

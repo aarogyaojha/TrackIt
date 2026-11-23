@@ -7,6 +7,8 @@ export const superadminKeys = {
     ['superadmin', 'organizations', 'list', params] as const,
   organizationDetail: (id: string) =>
     ['superadmin', 'organizations', 'detail', id] as const,
+  organizationQr: (id: string) =>
+    ['superadmin', 'organizations', 'qr', id] as const,
   organizationSubscription: (id: string) =>
     ['superadmin', 'organizations', 'subscription', id] as const,
   platformSettings: ['superadmin', 'platform-settings'] as const,

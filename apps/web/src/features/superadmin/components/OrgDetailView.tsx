@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, QrCodeIcon } from 'lucide-react';
 import { PlanTier } from '@trackit/types';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +46,8 @@ import {
 import { SUPERADMIN_COPY } from '../superadmin.constants';
 import { OrgActionButtons } from './OrgActionButtons';
 import { OrgStatusBadge } from './OrgStatusBadge';
+import { OrgQrDialog } from './OrgQrDialog';
+import { SuperAdminOrgQrCard } from './SuperAdminOrgQrCard';
 
 export interface OrgDetailViewProps {
   org: SuperAdminOrganization;
@@ -58,6 +60,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
   } = useOrgSubscription(org.id);
 
   const [userSelectedTier, setUserSelectedTier] = React.useState<PlanTier | null>(null);
+  const [qrDialogOpen, setQrDialogOpen] = React.useState(false);
   const changeTierMutation = useChangeOrgTier(org.id);
 
   const currentTier = subscription?.planTier;
@@ -104,12 +107,22 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
           <Link href={ROUTES.SUPERADMIN_ORGANIZATIONS} className="flex items-center gap-1.5">
             <ArrowLeft className="size-4" />
             {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.BACK_LINK}
           </Link>
+        </Button>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setQrDialogOpen(true)}
+          className="gap-1.5"
+        >
+          <QrCodeIcon className="size-4 text-primary" />
+          <span>{SUPERADMIN_COPY.ORGANIZATIONS.QR.VIEW_QR_BUTTON}</span>
         </Button>
       </div>
 
@@ -162,6 +175,13 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
         </CardContent>
       </Card>
 
+      {/* Customer Intake & QR Section */}
+      <SuperAdminOrgQrCard
+        orgId={org.id}
+        orgName={org.name}
+        orgSlug={org.slug}
+      />
+
       {/* Subscription & Usage Section */}
       <Card>
         <CardHeader>
@@ -193,7 +213,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
             </div>
           ) : subscription ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                 {[
                   {
                     id: 'activeTickets',
@@ -212,6 +232,12 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
                     label: 'Tickets This Month',
                     usage: subscription.usage?.ticketsThisMonth ?? 0,
                     limit: subscription.limits?.maxTicketsPerMonth,
+                  },
+                  {
+                    id: 'workflows',
+                    label: 'Workflows',
+                    usage: subscription.usage?.workflows ?? 0,
+                    limit: subscription.limits?.maxWorkflows,
                   },
                 ].map((metric) => {
                   const hasLimit =
@@ -343,6 +369,16 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
           )}
         </CardContent>
       </Card>
+
+      {qrDialogOpen && (
+        <OrgQrDialog
+          open={qrDialogOpen}
+          onOpenChange={setQrDialogOpen}
+          orgId={org.id}
+          orgName={org.name}
+          orgSlug={org.slug}
+        />
+      )}
     </div>
   );
 }

@@ -5,3 +5,5 @@ export * from './OrgStatusTabs';
 export * from './OrgDetailView';
 export * from './PlanLimitsCard';
 export * from './PlatformSettingsToggle';
+export * from './OrgQrDialog';
+export * from './SuperAdminOrgQrCard';

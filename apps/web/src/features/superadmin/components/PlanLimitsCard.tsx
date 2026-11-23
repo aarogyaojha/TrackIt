@@ -46,6 +46,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
       maxActiveTickets: plan.limits.maxActiveTickets,
       maxStaffUsers: plan.limits.maxStaffUsers,
       maxTicketsPerMonth: plan.limits.maxTicketsPerMonth,
+      maxWorkflows: plan.limits.maxWorkflows,
     },
   });
 
@@ -55,6 +56,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
       maxActiveTickets: plan.limits.maxActiveTickets,
       maxStaffUsers: plan.limits.maxStaffUsers,
       maxTicketsPerMonth: plan.limits.maxTicketsPerMonth,
+      maxWorkflows: plan.limits.maxWorkflows,
     });
   }, [plan.limits, form]);
 
@@ -129,6 +131,23 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_TICKETS_PER_MONTH}</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    {SUPERADMIN_COPY.PLANS.UNLIMITED_HINT}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="maxWorkflows"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_WORKFLOWS}</FormLabel>
                   <FormControl>
                     <Input type="number" min={0} {...field} />
                   </FormControl>

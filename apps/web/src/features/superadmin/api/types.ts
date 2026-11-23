@@ -43,6 +43,7 @@ export interface UpdatePlanLimitsPayload {
     maxActiveTickets?: number;
     maxStaffUsers?: number;
     maxTicketsPerMonth?: number;
+    maxWorkflows?: number;
   };
 }
 
