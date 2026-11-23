@@ -2,7 +2,12 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { LayoutDashboardIcon, SettingsIcon, TicketIcon } from 'lucide-react';
+import {
+  GitBranchIcon,
+  LayoutDashboardIcon,
+  SettingsIcon,
+  TicketIcon,
+} from 'lucide-react';
 import { ROUTES } from '@/constants/app.constants';
 import { useLogout } from '@/features/auth/api/useLogout';
 import { useRequireAuth } from '@/features/auth/hooks/useRequireAuth';
@@ -13,6 +18,7 @@ import { NavItem } from '@/components/dashboard-nav/DashboardNav';
 const ORG_NAV_ITEMS: NavItem[] = [
   { label: 'Overview', href: ROUTES.DASHBOARD, icon: LayoutDashboardIcon },
   { label: 'Tickets', href: ROUTES.TICKETS, icon: TicketIcon },
+  { label: 'Workflows', href: ROUTES.WORKFLOWS, icon: GitBranchIcon },
   { label: 'Settings', href: ROUTES.SETTINGS, icon: SettingsIcon },
 ];
 

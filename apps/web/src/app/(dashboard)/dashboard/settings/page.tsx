@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useOrganizationMe } from '@/features/organization/api/useOrganizationMe';
+import { CounterQrCard } from '@/features/dashboard/components/CounterQrCard';
 import { UsageSummary } from '@/features/subscription/components/UsageSummary';
 import { SETTINGS_COPY } from '@/features/subscription/subscription.constants';
 
@@ -148,6 +149,8 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       )}
+
+      <CounterQrCard />
 
       <UsageSummary />
     </div>

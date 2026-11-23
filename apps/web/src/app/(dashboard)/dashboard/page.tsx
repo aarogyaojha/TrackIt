@@ -9,6 +9,7 @@ import { DASHBOARD_COPY } from '@/features/dashboard/dashboard.constants';
 import { CreateTicketDialog } from '@/features/tickets/components/CreateTicketDialog';
 import { TICKETS_LIST_COPY } from '@/features/tickets/tickets.constants';
 import { UsageSummary } from '@/features/subscription/components/UsageSummary';
+import { CounterQrCard } from '@/features/dashboard/components/CounterQrCard';
 
 export default function DashboardPage() {
   const user = useAppSelector((state) => state.auth.user);
@@ -37,6 +38,8 @@ export default function DashboardPage() {
           </Button>
         </CardHeader>
       </Card>
+
+      <CounterQrCard />
 
       <UsageSummary />
 

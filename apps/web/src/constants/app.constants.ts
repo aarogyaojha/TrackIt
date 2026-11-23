@@ -10,6 +10,7 @@ export const ROUTES = {
   VERIFY_EMAIL: '/verify-email',
   DASHBOARD: '/dashboard',
   TICKETS: '/dashboard/tickets',
+  WORKFLOWS: '/dashboard/workflows',
   SETTINGS: '/dashboard/settings',
   SUPERADMIN: '/superadmin',
   SUPERADMIN_ORGANIZATIONS: '/superadmin/organizations',
@@ -20,4 +21,6 @@ export const ROUTES = {
 export const MARKETING_COPY = {
   LOGIN_LINK: 'Log in',
   REGISTER_BUTTON: 'Register',
+  TOGGLE_MENU: 'Toggle navigation menu',
+  CLOSE_MENU: 'Close menu',
 } as const;

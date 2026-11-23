@@ -25,6 +25,18 @@ export const ErrorMessages: Record<ErrorCodeType, string> = {
   [ErrorCode.EMAIL_ALREADY_VERIFIED]: 'Email is already verified.',
   [ErrorCode.EMAIL_NOT_VERIFIED]:
     'Your email address is not verified. Please verify your email before logging in.',
+  [ErrorCode.WORKFLOW_NAME_TAKEN]:
+    'A workflow with this name already exists for your organization.',
+  [ErrorCode.WORKFLOW_IN_USE]:
+    'Cannot delete or deactivate a workflow that is currently in use by tickets.',
+  [ErrorCode.WORKFLOW_STATUS_IN_USE]:
+    'Cannot remove or modify status stages that are currently in use by tickets.',
+  [ErrorCode.WORKFLOW_CANNOT_DELETE_DEFAULT]:
+    'Cannot delete the default workflow. Please set another workflow as default first.',
+  [ErrorCode.INVALID_WORKFLOW_STATUSES]:
+    'Workflow must contain at least one initial status and one completed status.',
+  [ErrorCode.DUPLICATE_WORKFLOW_STATUS_KEYS]:
+    'Status keys within a workflow must be unique.',
 };
 
 export const ERROR_MESSAGES = ErrorMessages;

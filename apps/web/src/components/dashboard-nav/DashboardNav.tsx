@@ -14,9 +14,10 @@ export interface NavItem {
 export interface DashboardNavProps {
   items: NavItem[];
   className?: string;
+  onItemClick?: () => void;
 }
 
-export function DashboardNav({ items, className }: DashboardNavProps) {
+export function DashboardNav({ items, className, onItemClick }: DashboardNavProps) {
   const pathname = usePathname();
 
   return (
@@ -32,6 +33,7 @@ export function DashboardNav({ items, className }: DashboardNavProps) {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onItemClick}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
               'group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
