@@ -97,14 +97,22 @@ All env var access goes through `src/config/configuration.ts` + `AppConfigServic
 - A global setting (superadmin-controlled, stored in a `PlatformSettings` doc) toggles `requireOrgApproval`. When true, `PENDING` orgs can't log in past a "pending approval" screen until a superadmin approves. When false, orgs go straight to `ACTIVE`.
 - Superadmin can also `SUSPEND` an active org.
 
-## Auth
+## Auth & Access Control (PBAC / RBAC)
 
 - Access tokens expire in 15m; refresh tokens expire in 7d with automatic rotation on each refresh request.
 - Refresh tokens are stored on the `User` document strictly as SHA-256 hashes (`refreshTokenHash`), never plaintext.
 - Refresh tokens are delivered and received via an `httpOnly`, `SameSite=None` (`secure: true`) cookie in production and `SameSite=Lax` in development, scoped to `Path=/api/v1/auth`. Access tokens are returned directly in the response body.
 - `JwtAuthGuard` is registered globally as `APP_GUARD` in `AppModule`. All routes are protected by default; public endpoints (e.g. `/auth/login`, `/auth/refresh`, `/organizations/register`, `/health`) must be explicitly annotated with `@Public()`.
-- `RolesGuard` is registered globally as `APP_GUARD` in `AppModule` following `JwtAuthGuard`. Role checks are opt-in via `@Roles(Role.XYZ)` (same shape as `@Public()`); use `@SuperAdminOnly()` as the standard alias decorator to gate a superadmin-only route.
+- `RolesGuard` is registered globally as `APP_GUARD` in `AppModule` following `JwtAuthGuard`. Role checks are opt-in via `@Roles(Role.XYZ)`; platform `SUPERADMIN` has automatic platform bypass across role checks; use `@SuperAdminOnly()` as the standard alias decorator to gate a superadmin-only route.
+- `PermissionsGuard` is registered globally as `APP_GUARD` in `AppModule` following `RolesGuard`. Endpoints declare granular permissions via `@RequirePermissions(Permission.XYZ)`. `SUPERADMIN` bypasses permission checks; `Permission.PLATFORM_ALL` grants wildcard bypass; otherwise user's role permissions are checked against required permissions.
 - `TenantGuard` verifies that the authenticated caller (`req.user`) has an active `organizationId`. It blocks platform `SUPERADMIN` (or any context lacking an organization scope) from hitting tenant-scoped routes without explicit tenant context, and ensures tenant scoping for downstream operations.
+- Dynamic Roles & Custom PBAC:
+  - `Role` collection is DB-backed with default seeded system roles (`SUPERADMIN`, `ORG_ADMIN`, `ORG_STAFF`).
+  - Superadmin can create, update, list, and delete custom roles via `/api/v1/roles` and `/superadmin/roles`. System roles cannot be renamed or deleted (`ROLE_CANNOT_DELETE_SYSTEM`, 400). Roles in active use cannot be deleted (`ROLE_IN_USE`, 409).
+  - Multi-user tenant organization team management via `/api/v1/users` and `/dashboard/team`: Org admins can add staff users, assign any system or custom role, update details/roles, toggle active status, and remove members.
+  - Tenant staff operations enforce plan `maxStaffUsers` limits via `assertPlanLimit('maxStaffUsers', currentStaffCount)`.
+  - Self-deletion and self-deactivation are blocked (`CANNOT_DELETE_SELF`, 400), and removing or deactivating the last active organization administrator is strictly blocked (`CANNOT_REMOVE_LAST_ADMIN`, 400).
+
 
 ## Pagination
 

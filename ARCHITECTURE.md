@@ -42,7 +42,7 @@ TrackIt is a multi-tenant ticketing and status-tracking SaaS designed for servic
 |                            MongoDB 7 (Replica Set)                            |
 |                                                                               |
 |   Collections: organizations, users, tickets, workflows, plans, subscriptions,|
-|                platform_settings                                              |
+|                roles, platform_settings                                       |
 +-------------------------------------------------------------------------------+
 ```
 
@@ -165,11 +165,32 @@ Throttling is enforced globally via `@nestjs/throttler` across three distinct ti
 - **Public Tier**: 30 requests/minute per IP for public tracking lookups.
 - **/health**: Explicitly exempted from rate limiting via `@SkipThrottle()`.
 
-### Role-Based Access Control (RBAC)
+### Permission-Based Access Control (PBAC / RBAC)
 
-- `SUPERADMIN`: Platform-level operator with global access to organization management, settings, and plan definitions. Has no `organizationId`.
-- `ORG_ADMIN`: Organization administrator with full control over tickets, organization settings, and staff.
-- `ORG_STAFF`: Operational staff member authorized to create and update tickets within their organization.
+TrackIt uses a granular, permission-based access control engine with dynamic roles:
+
+- **Granular Permissions (`Permission`)**: Fine-grained permissions defined in `@trackit/types` spanning all domains:
+  - `TICKETS_*` (`CREATE`, `READ`, `UPDATE`, `UPDATE_STATUS`, `DELETE`)
+  - `WORKFLOWS_*` (`CREATE`, `READ`, `UPDATE`, `DELETE`)
+  - `USERS_*` (`CREATE`, `READ`, `UPDATE`, `DELETE`)
+  - `ORG_*` (`READ`, `UPDATE`, `QR_VIEW`)
+  - `SUBSCRIPTION_*` (`READ`, `MANAGE`)
+  - `ROLES_*` (`READ`, `MANAGE`)
+  - `PLATFORM_ALL` (`*` wildcard master bypass)
+- **Dynamic Roles Architecture**: Roles are DB-backed entities in the `roles` collection. Default seeded system roles include:
+  - `SUPERADMIN`: Master platform operator with wildcard `PLATFORM_ALL` access across all tenants and settings.
+  - `ORG_ADMIN`: Organization administrator with full ticket, workflow, staff user, subscription read, and counter QR access.
+  - `ORG_STAFF`: Standard operational staff member authorized to create and read tickets, advance progress stages, read workflows, and access counter QR codes.
+- **Custom Roles**: Superadmins can create arbitrary custom roles (e.g., `TECHNICIAN`, `INSPECTOR`, `FRONT_DESK`) with tailored permission sets via `POST /api/v1/roles` or the `/superadmin/roles` portal.
+- **Guard Enforcement**:
+  - `PermissionsGuard` (global `APP_GUARD` following `RolesGuard`) validates `@RequirePermissions(...)` metadata.
+  - Superadmin accounts automatically bypass platform and tenant permission checks.
+  - Users with `Permission.PLATFORM_ALL` bypass permission restrictions.
+  - Other roles are verified against their assigned permissions resolved from the `roles` collection.
+- **Multi-User Tenant Team Management**:
+  - Organization admins can onboard staff members (`POST /api/v1/users`), assign roles (default or custom), update details (`PATCH /api/v1/users/:id`), and remove staff (`DELETE /api/v1/users/:id`) via `/dashboard/team`.
+  - Quotas are strictly enforced against subscription plan limits (`maxStaffUsers`) via `assertPlanLimit()`.
+  - Safety controls prevent self-deletion (`CANNOT_DELETE_SELF`) and protect against orphan organizations by blocking the removal or deactivation of the last remaining admin (`CANNOT_REMOVE_LAST_ADMIN`).
 
 ---
 
