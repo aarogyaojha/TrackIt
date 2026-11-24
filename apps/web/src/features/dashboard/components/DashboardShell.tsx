@@ -63,13 +63,13 @@ export function DashboardShell({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border bg-card sticky top-0 z-40">
-        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          <div className="flex items-center space-x-3.5">
             {/* Mobile Hamburger Menu Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden -ml-2 h-9 w-9 text-muted-foreground hover:text-foreground"
+              className="md:hidden -ml-2 size-10 text-muted-foreground hover:text-foreground"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label={mobileOpen ? DASHBOARD_COPY.CLOSE_MENU : DASHBOARD_COPY.TOGGLE_MENU}
               aria-expanded={mobileOpen}
@@ -77,8 +77,8 @@ export function DashboardShell({
               {mobileOpen ? <XIcon className="size-5" /> : <MenuIcon className="size-5" />}
             </Button>
 
-            <span className="text-xl font-bold tracking-tight">{APP_NAME}</span>
-            <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+            <span className="text-2xl font-extrabold tracking-tight text-foreground">{APP_NAME}</span>
+            <span className="text-xs px-2.5 py-1 rounded-md bg-muted text-muted-foreground font-mono font-medium">
               {portalLabel}
             </span>
           </div>
@@ -87,22 +87,27 @@ export function DashboardShell({
           <div className="hidden md:flex items-center space-x-4">
             {user && (
               <div className="text-sm text-right">
-                <p className="font-medium text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="font-semibold text-foreground">{user.name}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   {formatRoleName(user.role)}
                 </p>
               </div>
             )}
-            <ThemeToggle />
-            <Separator orientation="vertical" className="h-6" />
-            <Button variant="outline" size="sm" onClick={onLogout}>
+            <ThemeToggle className="size-10" />
+            <Separator orientation="vertical" className="h-8" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-10 px-4 text-sm font-medium"
+              onClick={onLogout}
+            >
               {DASHBOARD_COPY.LOGOUT_BUTTON}
             </Button>
           </div>
 
           {/* Mobile Right Bar (Theme Toggle) */}
           <div className="flex md:hidden items-center space-x-2">
-            <ThemeToggle />
+            <ThemeToggle className="size-10" />
           </div>
         </div>
       </header>
@@ -121,20 +126,20 @@ export function DashboardShell({
           <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border p-6 shadow-2xl flex flex-col justify-between animate-in slide-in-from-left duration-200">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg font-bold tracking-tight">{APP_NAME}</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                <div className="flex items-center space-x-2.5">
+                  <span className="text-2xl font-extrabold tracking-tight text-foreground">{APP_NAME}</span>
+                  <span className="text-xs px-2.5 py-1 rounded-md bg-muted text-muted-foreground font-mono font-medium">
                     {portalLabel}
                   </span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 -mr-2 text-muted-foreground hover:text-foreground"
+                  className="size-9 -mr-2 text-muted-foreground hover:text-foreground"
                   onClick={() => setMobileOpen(false)}
                   aria-label={DASHBOARD_COPY.CLOSE_MENU}
                 >
-                  <XIcon className="size-4" />
+                  <XIcon className="size-5" />
                 </Button>
               </div>
 
@@ -161,8 +166,7 @@ export function DashboardShell({
               )}
               <Button
                 variant="outline"
-                size="sm"
-                className="w-full justify-center text-muted-foreground hover:text-foreground"
+                className="w-full justify-center h-10 text-sm font-medium text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setMobileOpen(false);
                   onLogout();
@@ -177,8 +181,8 @@ export function DashboardShell({
 
       {/* Main Content Area */}
       <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row gap-6 lg:gap-8">
-        <aside className="hidden md:block w-52 lg:w-60 shrink-0">
-          <div className="sticky top-24">
+        <aside className="hidden md:block w-56 lg:w-64 shrink-0">
+          <div className="sticky top-28">
             <DashboardNav items={navItems} />
           </div>
         </aside>

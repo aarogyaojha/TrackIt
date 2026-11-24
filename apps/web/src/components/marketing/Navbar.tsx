@@ -13,10 +13,10 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 flex h-20 items-center justify-between">
         <Link
           href={ROUTES.HOME}
-          className="text-xl font-bold tracking-tight text-foreground hover:opacity-90 transition-opacity"
+          className="text-2xl font-extrabold tracking-tight text-foreground hover:opacity-90 transition-opacity"
         >
           {APP_NAME}
         </Link>
@@ -26,13 +26,13 @@ export function Navbar() {
           <ThemeToggle />
           <Link
             href={ROUTES.LOGIN}
-            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
+            className={cn(buttonVariants({ variant: 'ghost', size: 'default' }), 'h-10 px-4 text-sm font-medium')}
           >
             {MARKETING_COPY.LOGIN_LINK}
           </Link>
           <Link
             href={ROUTES.REGISTER}
-            className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
+            className={cn(buttonVariants({ variant: 'default', size: 'default' }), 'h-10 px-5 text-sm font-medium')}
           >
             {MARKETING_COPY.REGISTER_BUTTON}
           </Link>
@@ -44,7 +44,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 text-muted-foreground hover:text-foreground"
+            className="size-10 text-muted-foreground hover:text-foreground"
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             aria-label={mobileMenuOpen ? MARKETING_COPY.CLOSE_MENU : MARKETING_COPY.TOGGLE_MENU}
             aria-expanded={mobileMenuOpen}

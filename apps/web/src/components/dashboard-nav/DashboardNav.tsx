@@ -21,7 +21,7 @@ export function DashboardNav({ items, className, onItemClick }: DashboardNavProp
   const pathname = usePathname();
 
   return (
-    <nav className={cn('space-y-1', className)} aria-label="Sidebar Navigation">
+    <nav className={cn('space-y-1.5', className)} aria-label="Sidebar Navigation">
       {items.map((item) => {
         const Icon = item.icon;
         // Exact match for base dashboard, prefix match for subpaths
@@ -36,23 +36,23 @@ export function DashboardNav({ items, className, onItemClick }: DashboardNavProp
             onClick={onItemClick}
             aria-current={isActive ? 'page' : undefined}
             className={cn(
-              'group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              'group flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-medium transition-all',
               isActive
                 ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
             )}
           >
             {Icon && (
               <Icon
                 className={cn(
-                  'size-4 shrink-0 transition-colors',
+                  'size-5 shrink-0 transition-colors',
                   isActive
                     ? 'text-primary-foreground'
                     : 'text-muted-foreground group-hover:text-foreground',
                 )}
               />
             )}
-            <span>{item.label}</span>
+            <span className="truncate">{item.label}</span>
           </Link>
         );
       })}
