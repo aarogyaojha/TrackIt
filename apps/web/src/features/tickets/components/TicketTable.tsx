@@ -32,26 +32,26 @@ export function TicketTable({ tickets }: TicketTableProps) {
   }
 
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-border bg-card">
+    <div className="w-full overflow-x-auto rounded-xl border border-border bg-card shadow-xs overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead className="w-[140px]">
+          <TableRow className="h-12 border-b bg-muted/20">
+            <TableHead className="w-[140px] font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_CODE}
             </TableHead>
-            <TableHead className="min-w-[150px]">
+            <TableHead className="min-w-[150px] font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_CUSTOMER}
             </TableHead>
-            <TableHead className="min-w-[200px]">
+            <TableHead className="min-w-[200px] font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_ITEM}
             </TableHead>
-            <TableHead className="w-[130px]">
+            <TableHead className="w-[130px] font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_STATUS}
             </TableHead>
-            <TableHead className="w-[130px]">
+            <TableHead className="w-[130px] font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_CREATED}
             </TableHead>
-            <TableHead className="w-[100px] text-right">
+            <TableHead className="w-[100px] text-right font-semibold text-sm">
               {TICKETS_LIST_COPY.TABLE_HEADER_ACTIONS}
             </TableHead>
           </TableRow>
@@ -67,29 +67,29 @@ export function TicketTable({ tickets }: TicketTableProps) {
               : '—';
 
             return (
-              <TableRow key={ticket.id}>
-                <TableCell className="font-mono font-medium text-foreground">
+              <TableRow key={ticket.id} className="h-16 hover:bg-muted/30 transition-colors">
+                <TableCell className="font-mono font-bold text-sm text-primary py-4">
                   {ticket.code}
                 </TableCell>
-                <TableCell>
-                  <div className="font-medium text-foreground">
+                <TableCell className="py-4">
+                  <div className="font-semibold text-sm text-foreground">
                     {ticket.customerName}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mt-0.5">
                     {ticket.customerPhone}
                   </div>
                 </TableCell>
-                <TableCell className="max-w-[240px] truncate text-muted-foreground">
+                <TableCell className="max-w-[240px] truncate text-muted-foreground text-sm py-4">
                   {ticket.itemDescription}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-4">
                   <StatusBadge status={ticket.status} />
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                <TableCell className="text-xs text-muted-foreground whitespace-nowrap py-4">
                   {formattedDate}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" asChild>
+                <TableCell className="text-right py-4">
+                  <Button variant="ghost" size="sm" asChild className="h-9 px-3 font-medium">
                     <Link href={`/dashboard/tickets/${ticket.id}`}>
                       {TICKETS_LIST_COPY.VIEW_DETAILS_BUTTON}
                     </Link>

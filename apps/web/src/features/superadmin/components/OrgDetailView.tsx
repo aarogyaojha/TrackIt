@@ -106,9 +106,9 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild>
+        <Button variant="ghost" size="sm" asChild className="h-9 px-3 text-xs font-medium">
           <Link href={ROUTES.SUPERADMIN_ORGANIZATIONS} className="flex items-center gap-1.5">
             <ArrowLeft className="size-4" />
             {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.BACK_LINK}
@@ -119,7 +119,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
           variant="outline"
           size="sm"
           onClick={() => setQrDialogOpen(true)}
-          className="gap-1.5"
+          className="h-9 gap-1.5 px-3.5 text-xs font-medium"
         >
           <QrCodeIcon className="size-4 text-primary" />
           <span>{SUPERADMIN_COPY.ORGANIZATIONS.QR.VIEW_QR_BUTTON}</span>
@@ -127,23 +127,23 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
       </div>
 
       {/* Profile Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="rounded-xl border border-border bg-card shadow-xs">
+        <CardHeader className="flex flex-row items-center justify-between p-6 pb-5 border-b border-border/40">
           <div>
-            <CardTitle className="text-xl font-bold">{org.name}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-xl sm:text-2xl font-bold">{org.name}</CardTitle>
+            <CardDescription className="mt-1">
               {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.PROFILE_SECTION}
             </CardDescription>
           </div>
           <OrgActionButtons org={org} size="default" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 pt-5">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div>
               <p className="text-xs font-medium text-muted-foreground">
                 {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.NAME_LABEL}
               </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
+              <p className="mt-1.5 text-sm font-semibold text-foreground">
                 {org.name}
               </p>
             </div>
@@ -151,7 +151,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
               <p className="text-xs font-medium text-muted-foreground">
                 {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.SLUG_LABEL}
               </p>
-              <p className="mt-1 font-mono text-sm font-semibold text-foreground">
+              <p className="mt-1.5 font-mono text-sm font-semibold text-foreground">
                 {org.slug}
               </p>
             </div>
@@ -159,7 +159,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
               <p className="text-xs font-medium text-muted-foreground">
                 {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.STATUS_LABEL}
               </p>
-              <div className="mt-1">
+              <div className="mt-1.5">
                 <OrgStatusBadge status={org.status} />
               </div>
             </div>
@@ -167,7 +167,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
               <p className="text-xs font-medium text-muted-foreground">
                 {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.CREATED_LABEL}
               </p>
-              <p className="mt-1 text-sm font-medium text-foreground">
+              <p className="mt-1.5 text-sm font-medium text-foreground">
                 {formattedCreatedDate}
               </p>
             </div>
@@ -183,28 +183,28 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
       />
 
       {/* Subscription & Usage Section */}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-xl border border-border bg-card shadow-xs">
+        <CardHeader className="p-6 pb-5 border-b border-border/40">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">
+              <CardTitle className="text-xl font-bold">
                 {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.SUBSCRIPTION_SECTION}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="mt-1">
                 Current subscription tier and tenant resource usage.
               </CardDescription>
             </div>
             {subscription && (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">Current Plan:</span>
-                <Badge variant={getTierBadgeVariant(subscription.planTier)}>
+                <Badge variant={getTierBadgeVariant(subscription.planTier)} className="text-xs px-2.5 py-0.5 font-medium">
                   {subscription.planTier}
                 </Badge>
               </div>
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-6 pt-5 space-y-6">
           {isSubLoading ? (
             <div className="space-y-4">
               <Skeleton className="h-10 w-full" />
@@ -256,7 +256,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
                   return (
                     <div
                       key={metric.id}
-                      className="rounded-lg border border-border bg-muted/20 p-4 space-y-3"
+                      className="rounded-xl border border-border bg-muted/20 p-5 space-y-3.5"
                     >
                       <Progress
                         value={percentage}
@@ -286,25 +286,25 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
               </div>
 
               {/* Tier Change Control */}
-              <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-4">
+              <div className="rounded-xl border border-border bg-muted/30 p-5 space-y-4">
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">
                     {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.CHANGE_TIER_TITLE}
                   </h4>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.CHANGE_TIER_DESCRIPTION}
                   </p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <div className="w-full sm:w-56">
+                  <div className="w-full sm:w-60">
                     <Select
                       value={selectedTier || undefined}
                       onValueChange={(val) =>
                         setUserSelectedTier((val as PlanTier) || null)
                       }
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full h-10">
                         <SelectValue
                           placeholder={
                             SUPERADMIN_COPY.ORGANIZATIONS.DETAIL.SELECT_TIER_LABEL
@@ -329,6 +329,7 @@ export function OrgDetailView({ org }: OrgDetailViewProps) {
                     <AlertDialogTrigger asChild>
                       <Button
                         type="button"
+                        className="h-10 px-5 text-sm font-medium"
                         disabled={
                           !selectedTier ||
                           selectedTier === subscription.planTier ||

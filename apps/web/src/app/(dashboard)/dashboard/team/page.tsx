@@ -52,31 +52,31 @@ export default function TeamPage() {
   const isLimitReached = maxStaff !== undefined && currentCount >= maxStaff;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               {TEAM_COPY.PAGE_TITLE}
             </h1>
             {maxStaff !== undefined && (
               <Badge
                 variant={isLimitReached ? 'destructive' : 'secondary'}
-                className="text-xs"
+                className="text-xs px-2.5 py-0.5"
               >
                 {currentCount} / {maxStaff} {TEAM_COPY.USAGE_LABEL}
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1.5">
             {TEAM_COPY.PAGE_DESCRIPTION}
           </p>
         </div>
         <Button
           onClick={() => setAddOpen(true)}
-          className="self-start sm:self-auto"
+          className="self-start sm:self-auto h-10 px-5 text-sm font-medium"
         >
-          <PlusIcon className="mr-2 h-4 w-4" />
+          <PlusIcon className="mr-1.5 size-4" />
           {TEAM_COPY.ADD_MEMBER_BUTTON}
         </Button>
       </div>

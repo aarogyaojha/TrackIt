@@ -39,60 +39,61 @@ export default function SettingsPage() {
 
   const formattedCreated = org?.createdAt
     ? new Date(org.createdAt).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
     : '—';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
           {SETTINGS_COPY.PAGE_TITLE}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-1.5">
           {SETTINGS_COPY.PAGE_DESCRIPTION}
         </p>
       </div>
 
       {isPending ? (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-xs">
+          <CardHeader className="p-6 pb-5 border-b">
             <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-60" />
+            <Skeleton className="h-4 w-60 mt-1" />
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="p-6 pt-5 space-y-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-10 w-full" />
           </CardContent>
         </Card>
       ) : isError ? (
-        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-center text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-6 text-center text-sm text-destructive">
           {error?.message || 'Failed to load organization settings.'}
         </div>
       ) : (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-xs">
+          <CardHeader className="p-6 pb-5 border-b">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">
+              <CardTitle className="text-xl font-bold">
                 {SETTINGS_COPY.ORG_PROFILE_TITLE}
               </CardTitle>
               {org?.status && (
                 <Badge
                   variant={org.status === 'ACTIVE' ? 'success' : 'warning'}
+                  className="text-xs px-2.5 py-0.5"
                 >
                   {org.status}
                 </Badge>
               )}
             </div>
-            <CardDescription>
+            <CardDescription className="text-sm text-muted-foreground mt-1">
               {SETTINGS_COPY.ORG_PROFILE_DESCRIPTION}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="p-6 pt-5 space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <span className="text-xs font-medium text-muted-foreground">
                   {SETTINGS_COPY.ORG_NAME_LABEL}
                 </span>
@@ -101,7 +102,7 @@ export default function SettingsPage() {
                 </p>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <span className="text-xs font-medium text-muted-foreground">
                   {SETTINGS_COPY.REGISTERED_ON_LABEL}
                 </span>
@@ -120,7 +121,7 @@ export default function SettingsPage() {
                   type="text"
                   readOnly
                   value={org?.slug || ''}
-                  className="flex-1 min-w-0 rounded-md border border-input bg-muted/40 px-3 py-1.5 text-sm text-foreground font-mono focus:outline-hidden"
+                  className="flex-1 min-w-0 rounded-lg border border-input bg-muted/40 px-3.5 h-10 text-sm text-foreground font-mono focus:outline-hidden"
                 />
                 <Tooltip open={copiedSlug} onOpenChange={setCopiedSlug}>
                   <TooltipTrigger
@@ -128,7 +129,8 @@ export default function SettingsPage() {
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="icon"
+                        className="h-10 w-10 shrink-0"
                         onClick={handleCopySlug}
                         aria-label={SETTINGS_COPY.COPY_SLUG_BUTTON}
                       >

@@ -81,24 +81,24 @@ export function WorkflowList({
   }
 
   return (
-    <Card>
+    <Card className="rounded-xl border border-border shadow-xs overflow-hidden">
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>{WORKFLOW_TABLE_HEADERS.NAME}</TableHead>
-              <TableHead>{WORKFLOW_TABLE_HEADERS.DESCRIPTION}</TableHead>
-              <TableHead className="text-center">
+            <TableRow className="h-12 border-b bg-muted/20">
+              <TableHead className="font-semibold text-sm">{WORKFLOW_TABLE_HEADERS.NAME}</TableHead>
+              <TableHead className="font-semibold text-sm">{WORKFLOW_TABLE_HEADERS.DESCRIPTION}</TableHead>
+              <TableHead className="text-center font-semibold text-sm">
                 {WORKFLOW_TABLE_HEADERS.STATUS_COUNT}
               </TableHead>
-              <TableHead className="text-center">
+              <TableHead className="text-center font-semibold text-sm">
                 {WORKFLOW_TABLE_HEADERS.IS_DEFAULT}
               </TableHead>
-              <TableHead className="text-center">
+              <TableHead className="text-center font-semibold text-sm">
                 {WORKFLOW_TABLE_HEADERS.STATUS}
               </TableHead>
               {canManage && (
-                <TableHead className="text-right">
+                <TableHead className="text-right font-semibold text-sm">
                   {WORKFLOW_TABLE_HEADERS.ACTIONS}
                 </TableHead>
               )}
@@ -106,17 +106,17 @@ export function WorkflowList({
           </TableHeader>
           <TableBody>
             {workflows.map((wf) => (
-              <TableRow key={wf.id}>
-                <TableCell className="font-medium">
+              <TableRow key={wf.id} className="h-16 hover:bg-muted/30 transition-colors">
+                <TableCell className="font-medium py-4">
                   <div className="flex items-center gap-2">
-                    <GitBranchIcon className="h-4 w-4 text-muted-foreground" />
-                    <span>{wf.name}</span>
+                    <GitBranchIcon className="size-4 text-muted-foreground" />
+                    <span className="font-semibold text-sm text-foreground">{wf.name}</span>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground max-w-xs truncate">
+                <TableCell className="text-muted-foreground max-w-xs truncate text-sm py-4">
                   {wf.description || '—'}
                 </TableCell>
-                <TableCell className="text-center font-mono text-sm">
+                <TableCell className="text-center font-bold text-sm py-4">
                   {wf.statusCount}
                 </TableCell>
                 <TableCell className="text-center">

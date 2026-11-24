@@ -102,29 +102,29 @@ export function OrganizationsTable({
       </div>
 
       {/* Desktop Table (hidden md:block) */}
-      <div className="hidden md:block w-full overflow-x-auto rounded-lg border border-border bg-card">
+      <div className="hidden md:block w-full overflow-x-auto rounded-xl border border-border bg-card shadow-xs overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[180px]">
+            <TableRow className="h-12 border-b bg-muted/20">
+              <TableHead className="min-w-[180px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.NAME}
               </TableHead>
-              <TableHead className="w-[150px]">
+              <TableHead className="w-[150px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.SLUG}
               </TableHead>
-              <TableHead className="w-[110px]">
+              <TableHead className="w-[110px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.STATUS}
               </TableHead>
-              <TableHead className="w-[130px]">
+              <TableHead className="w-[130px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.CREATED}
               </TableHead>
-              <TableHead className="w-[120px]">
+              <TableHead className="w-[120px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.QR_CODE}
               </TableHead>
-              <TableHead className="min-w-[170px]">
+              <TableHead className="min-w-[170px] font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.ACTIONS}
               </TableHead>
-              <TableHead className="w-[120px] text-right">
+              <TableHead className="w-[120px] text-right font-semibold text-sm">
                 {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.VIEW_DETAILS}
               </TableHead>
             </TableRow>
@@ -140,20 +140,20 @@ export function OrganizationsTable({
                 : '—';
 
               return (
-                <TableRow key={org.id}>
-                  <TableCell className="font-medium text-foreground">
+                <TableRow key={org.id} className="h-16 hover:bg-muted/30 transition-colors">
+                  <TableCell className="font-medium text-foreground py-4">
                     {org.name}
                   </TableCell>
-                  <TableCell className="font-mono text-sm text-muted-foreground">
+                  <TableCell className="font-mono text-sm text-muted-foreground py-4">
                     {org.slug}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <OrgStatusBadge status={org.status} />
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap py-4">
                     {formattedDate}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <Button
                       variant="outline"
                       size="sm"
@@ -165,10 +165,10 @@ export function OrganizationsTable({
                       <span>{SUPERADMIN_COPY.ORGANIZATIONS.QR.VIEW_QR_BUTTON}</span>
                     </Button>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-4">
                     <OrgActionButtons org={org} />
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-4">
                     <Button variant="ghost" size="sm" asChild>
                       <Link href={`/superadmin/organizations/${org.id}`}>
                         {SUPERADMIN_COPY.ORGANIZATIONS.TABLE.VIEW_DETAILS}

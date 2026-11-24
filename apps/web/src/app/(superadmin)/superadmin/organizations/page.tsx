@@ -86,12 +86,12 @@ export default function SuperAdminOrganizationsPage() {
             : SUPERADMIN_COPY.ORGANIZATIONS.EMPTY_STATES.PENDING;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
           {SUPERADMIN_COPY.ORGANIZATIONS.TITLE}
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground mt-1.5">
           {SUPERADMIN_COPY.ORGANIZATIONS.DESCRIPTION}
         </p>
       </div>

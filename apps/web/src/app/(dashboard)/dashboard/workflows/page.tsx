@@ -35,19 +35,19 @@ export default function WorkflowsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             {WORKFLOWS_PAGE_COPY.PAGE_TITLE}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1.5">
             {WORKFLOWS_PAGE_COPY.PAGE_DESCRIPTION}
           </p>
         </div>
 
         {canManage && (
-          <Button onClick={handleCreate} className="gap-2 shrink-0">
+          <Button onClick={handleCreate} className="gap-2 shrink-0 h-10 px-5 text-sm font-medium">
             <PlusIcon className="h-4 w-4" />
             {WORKFLOWS_PAGE_COPY.CREATE_BUTTON}
           </Button>

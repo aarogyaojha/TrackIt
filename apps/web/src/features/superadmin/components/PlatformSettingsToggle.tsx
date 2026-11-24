@@ -60,15 +60,15 @@ export function PlatformSettingsToggle() {
   const isChecked = settings?.requireOrgApproval ?? true;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{SUPERADMIN_COPY.SETTINGS.TITLE}</CardTitle>
-        <CardDescription>
+    <Card className="rounded-xl border border-border bg-card shadow-xs">
+      <CardHeader className="p-6 pb-5 border-b border-border/40">
+        <CardTitle className="text-xl font-bold">{SUPERADMIN_COPY.SETTINGS.TITLE}</CardTitle>
+        <CardDescription className="text-xs text-muted-foreground mt-1">
           {SUPERADMIN_COPY.SETTINGS.DESCRIPTION}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex items-start justify-between gap-4 rounded-lg border border-border bg-muted/20 p-4">
+      <CardContent className="p-6 pt-5">
+        <div className="flex items-start justify-between gap-4 rounded-xl border border-border bg-muted/20 p-5">
           <div className="space-y-1">
             <Label
               htmlFor="require-org-approval-toggle"
@@ -76,7 +76,7 @@ export function PlatformSettingsToggle() {
             >
               {SUPERADMIN_COPY.SETTINGS.REQUIRE_APPROVAL_TITLE}
             </Label>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed mt-0.5">
               {SUPERADMIN_COPY.SETTINGS.REQUIRE_APPROVAL_DESCRIPTION}
             </p>
           </div>
@@ -85,7 +85,7 @@ export function PlatformSettingsToggle() {
             checked={isChecked}
             onCheckedChange={handleCheckedChange}
             disabled={updateSettingsMutation.isPending}
-            className="mt-1"
+            className="mt-0.5"
           />
         </div>
       </CardContent>

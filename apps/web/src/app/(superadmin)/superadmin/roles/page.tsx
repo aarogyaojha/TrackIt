@@ -42,18 +42,18 @@ export default function SuperAdminRolesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             {ROLES_COPY.PAGE_TITLE}
           </h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-muted-foreground text-sm mt-1.5">
             {ROLES_COPY.PAGE_DESCRIPTION}
           </p>
         </div>
-        <Button onClick={handleCreate} className="self-start sm:self-auto">
-          <PlusIcon className="mr-2 h-4 w-4" />
+        <Button onClick={handleCreate} className="self-start sm:self-auto h-10 px-5 text-sm font-medium">
+          <PlusIcon className="mr-1.5 size-4" />
           {ROLES_COPY.ADD_ROLE_BUTTON}
         </Button>
       </div>

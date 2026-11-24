@@ -108,27 +108,27 @@ export function SuperAdminOrgQrCard({
 
   return (
     <>
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <Card className="rounded-xl border border-border bg-card shadow-xs">
+        <CardHeader className="p-6 pb-5 border-b border-border/40">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
               <QrCodeIcon className="size-4" />
             </div>
             <div>
-              <CardTitle className="text-lg font-semibold">
+              <CardTitle className="text-lg font-semibold text-foreground">
                 {SUPERADMIN_COPY.ORGANIZATIONS.QR.SECTION_TITLE}
               </CardTitle>
-              <CardDescription className="text-sm text-muted-foreground mt-0.5">
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 {SUPERADMIN_COPY.ORGANIZATIONS.QR.SECTION_DESCRIPTION}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-6 pt-5">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* QR Code Container */}
-            <div className="p-3 bg-white rounded-xl shadow-xs border border-border/50 shrink-0">
+            <div className="p-4 bg-white rounded-xl shadow-xs border border-border shrink-0">
               <Image
                 src={qrData.qrCodeDataUrl}
                 alt={`${orgName} Tracking QR Code`}
@@ -149,13 +149,13 @@ export function SuperAdminOrgQrCard({
                   <Input
                     readOnly
                     value={qrData.checkInUrl}
-                    className="font-mono text-xs h-9 bg-muted/30"
+                    className="font-mono text-xs h-10 bg-muted/30"
                   />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleCopy}
-                    className="shrink-0 gap-1.5 h-9"
+                    className="shrink-0 gap-1.5 h-10 px-4"
                   >
                     {copied ? (
                       <>
@@ -175,7 +175,7 @@ export function SuperAdminOrgQrCard({
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Button
                   onClick={handleDownload}
-                  className="gap-2 shrink-0"
+                  className="gap-2 shrink-0 h-10 px-4 text-xs font-medium"
                 >
                   <DownloadIcon className="size-4" />
                   {SUPERADMIN_COPY.ORGANIZATIONS.QR.DOWNLOAD_BUTTON}
@@ -184,7 +184,7 @@ export function SuperAdminOrgQrCard({
                 <Button
                   variant="outline"
                   onClick={() => setPrintDialogOpened(true)}
-                  className="gap-2 shrink-0"
+                  className="gap-2 shrink-0 h-10 px-4 text-xs font-medium"
                 >
                   <PrinterIcon className="size-4" />
                   {SUPERADMIN_COPY.ORGANIZATIONS.QR.PRINT_BUTTON}
@@ -193,7 +193,7 @@ export function SuperAdminOrgQrCard({
                 <Button
                   variant="outline"
                   asChild
-                  className="gap-2 shrink-0 text-muted-foreground hover:text-foreground"
+                  className="gap-2 shrink-0 text-muted-foreground hover:text-foreground h-10 px-4 text-xs font-medium"
                 >
                   <a
                     href={qrData.checkInUrl}

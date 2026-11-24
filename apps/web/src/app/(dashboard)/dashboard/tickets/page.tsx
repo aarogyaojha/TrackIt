@@ -93,19 +93,19 @@ export default function TicketsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             {TICKETS_LIST_COPY.TITLE}
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1.5">
             {TICKETS_LIST_COPY.DESCRIPTION}
           </p>
         </div>
 
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <PlusIcon className="mr-1 size-4" />
+        <Button onClick={() => setCreateDialogOpen(true)} className="h-10 px-5 text-sm font-medium">
+          <PlusIcon className="mr-1.5 size-4" />
           {TICKETS_LIST_COPY.CREATE_BUTTON}
         </Button>
       </div>

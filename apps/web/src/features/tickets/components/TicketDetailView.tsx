@@ -52,15 +52,15 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
     : '—';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" size="sm" asChild className="h-9 px-3.5 text-xs font-medium">
           <Link href="/dashboard/tickets">
-            <ArrowLeftIcon className="mr-1 size-4" />
+            <ArrowLeftIcon className="mr-1.5 size-4" />
             {TICKET_DETAIL_COPY.BACK_BUTTON}
           </Link>
         </Button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="text-xs text-muted-foreground">
             Created: {formattedCreated}
           </span>
@@ -68,42 +68,42 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
         {/* Left 2 columns: Details & History */}
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
+        <div className="lg:col-span-2 space-y-6 lg:space-y-8">
+          <Card className="rounded-xl border border-border bg-card shadow-xs">
+            <CardHeader className="p-6 pb-5 border-b border-border/40">
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-xs font-mono font-medium text-muted-foreground uppercase">
                     {TICKET_DETAIL_COPY.CODE_PREFIX}
                   </span>
-                  <CardTitle className="text-2xl font-mono font-bold text-foreground">
+                  <CardTitle className="text-2xl sm:text-3xl font-mono font-bold text-foreground">
                     {ticket.code}
                   </CardTitle>
                 </div>
                 <StatusBadge status={ticket.status} />
               </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="p-6 pt-5 space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <div className="rounded-xl border border-border bg-muted/20 p-5">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     {TICKET_DETAIL_COPY.CUSTOMER_SECTION_TITLE}
                   </h4>
-                  <p className="font-medium text-foreground">
+                  <p className="font-semibold text-base text-foreground">
                     {ticket.customerName}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground mt-0.5">
                     {ticket.customerPhone}
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-border bg-muted/20 p-4">
+                <div className="rounded-xl border border-border bg-muted/20 p-5">
                   <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                     {TICKET_DETAIL_COPY.ITEM_SECTION_TITLE}
                   </h4>
-                  <p className="text-sm text-foreground">
+                  <p className="text-sm text-foreground leading-relaxed">
                     {ticket.itemDescription}
                   </p>
                 </div>
@@ -125,13 +125,13 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
           </Card>
 
           {/* Status History Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">
+          <Card className="rounded-xl border border-border bg-card shadow-xs">
+            <CardHeader className="p-6 pb-5 border-b border-border/40">
+              <CardTitle className="text-lg font-semibold">
                 {TICKET_DETAIL_COPY.TIMELINE_TITLE}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 pt-5">
               {ticket.statusHistory && ticket.statusHistory.length > 0 ? (
                 <div className="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-border">
                   {ticket.statusHistory.map((item, index) => {
@@ -181,12 +181,12 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
         </div>
 
         {/* Right column: QR Code & Public URL */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
+        <div className="space-y-6 lg:space-y-8">
+          <Card className="rounded-xl border border-border bg-card shadow-xs">
+            <CardHeader className="p-6 pb-5 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <QrCodeIcon className="size-5 text-muted-foreground" />
-                <CardTitle className="text-lg">
+                <CardTitle className="text-lg font-semibold">
                   {TICKET_DETAIL_COPY.PUBLIC_TRACKING_TITLE}
                 </CardTitle>
               </div>
@@ -194,9 +194,9 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                 {TICKET_DETAIL_COPY.PUBLIC_TRACKING_DESCRIPTION}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center text-center space-y-4">
+            <CardContent className="p-6 pt-5 flex flex-col items-center text-center space-y-5">
               {ticket.qrCodeDataUrl ? (
-                <div className="rounded-lg border border-border bg-white p-3 shadow-xs">
+                <div className="rounded-xl border border-border bg-white p-4 shadow-xs">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={ticket.qrCodeDataUrl}
@@ -215,7 +215,7 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                     type="text"
                     readOnly
                     value={ticket.publicUrl}
-                    className="flex-1 min-w-0 rounded-md border border-input bg-muted/40 px-3 py-1.5 text-xs text-foreground font-mono focus:outline-hidden"
+                    className="flex-1 min-w-0 rounded-md border border-input bg-muted/40 px-3.5 py-2 h-10 text-xs text-foreground font-mono focus:outline-hidden"
                   />
                   <Tooltip open={copied} onOpenChange={setCopied}>
                     <TooltipTrigger
@@ -223,7 +223,8 @@ export function TicketDetailView({ ticket }: TicketDetailViewProps) {
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
+                          size="icon"
+                          className="size-10 shrink-0"
                           onClick={handleCopyLink}
                           aria-label={TICKET_DETAIL_COPY.COPY_LINK_BUTTON}
                         >

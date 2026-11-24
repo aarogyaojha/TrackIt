@@ -81,16 +81,16 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
     ] || `${plan.tier} Tier`;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{tierTitle}</CardTitle>
-        <CardDescription>
+    <Card className="rounded-xl border border-border bg-card shadow-xs flex flex-col justify-between">
+      <CardHeader className="p-6 pb-5 border-b border-border/40">
+        <CardTitle className="text-xl font-bold text-foreground">{tierTitle}</CardTitle>
+        <CardDescription className="text-xs text-muted-foreground mt-1">
           Resource constraints applied to organizations on the {plan.tier} plan.
         </CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-1 justify-between">
+          <CardContent className="p-6 pt-5 space-y-5 flex-1">
             <FormField
               control={form.control}
               name="maxActiveTickets"
@@ -98,7 +98,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
                 <FormItem>
                   <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_ACTIVE_TICKETS}</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} {...field} />
+                    <Input type="number" min={0} className="h-10" {...field} />
                   </FormControl>
                   <FormDescription>
                     {SUPERADMIN_COPY.PLANS.UNLIMITED_HINT}
@@ -115,7 +115,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
                 <FormItem>
                   <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_STAFF_USERS}</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} {...field} />
+                    <Input type="number" min={0} className="h-10" {...field} />
                   </FormControl>
                   <FormDescription>
                     {SUPERADMIN_COPY.PLANS.UNLIMITED_HINT}
@@ -132,7 +132,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
                 <FormItem>
                   <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_TICKETS_PER_MONTH}</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} {...field} />
+                    <Input type="number" min={0} className="h-10" {...field} />
                   </FormControl>
                   <FormDescription>
                     {SUPERADMIN_COPY.PLANS.UNLIMITED_HINT}
@@ -149,7 +149,7 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
                 <FormItem>
                   <FormLabel>{SUPERADMIN_COPY.PLANS.MAX_WORKFLOWS}</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} {...field} />
+                    <Input type="number" min={0} className="h-10" {...field} />
                   </FormControl>
                   <FormDescription>
                     {SUPERADMIN_COPY.PLANS.UNLIMITED_HINT}
@@ -159,9 +159,10 @@ export function PlanLimitsCard({ plan }: PlanLimitsCardProps) {
               )}
             />
           </CardContent>
-          <CardFooter className="flex justify-end">
+          <CardFooter className="p-6 pt-4 border-t border-border/40 flex justify-end">
             <Button
               type="submit"
+              className="h-10 px-5 text-sm font-medium"
               disabled={updateLimitsMutation.isPending || !form.formState.isDirty}
             >
               {updateLimitsMutation.isPending
