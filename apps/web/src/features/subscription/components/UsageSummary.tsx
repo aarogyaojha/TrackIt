@@ -106,7 +106,7 @@ export function UsageSummary() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {metrics.map((metric) => {
             const hasLimit = typeof metric.limit === 'number' && metric.limit > 0;
             const percentage = hasLimit
@@ -121,7 +121,7 @@ export function UsageSummary() {
             return (
               <div
                 key={metric.id}
-                className="rounded-lg border border-border bg-muted/20 p-4 space-y-3"
+                className="rounded-lg border border-border bg-muted/20 p-4 space-y-3 min-w-0"
               >
                 <Progress
                   value={percentage}
@@ -131,11 +131,11 @@ export function UsageSummary() {
                       : ''
                   }
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <ProgressLabel className="text-xs font-medium text-foreground">
+                  <div className="flex items-center justify-between gap-2 w-full min-w-0">
+                    <ProgressLabel className="text-xs font-medium text-foreground truncate">
                       {metric.label}
                     </ProgressLabel>
-                    <span className="ml-auto text-xs font-semibold tabular-nums text-muted-foreground">
+                    <span className="text-xs font-semibold tabular-nums text-muted-foreground shrink-0 whitespace-nowrap">
                       {valueText}
                     </span>
                   </div>

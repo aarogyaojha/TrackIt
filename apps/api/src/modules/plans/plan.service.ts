@@ -12,6 +12,13 @@ export class PlansService {
   async getByTier(tier: PlanTier): Promise<PlanDocument> {
     const existing = await this.plansRepository.findByTier(tier);
     if (existing) {
+      if (
+        existing.limits &&
+        (existing.limits.maxWorkflows === undefined ||
+          existing.limits.maxWorkflows === null)
+      ) {
+        existing.limits.maxWorkflows = DEFAULT_PLAN_LIMITS[tier].maxWorkflows;
+      }
       return existing;
     }
 
