@@ -63,7 +63,7 @@ export function DashboardShell({
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border bg-card sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             {/* Mobile Hamburger Menu Toggle Button */}
             <Button
@@ -176,9 +176,11 @@ export function DashboardShell({
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row gap-8">
-        <aside className="hidden md:block w-56 shrink-0">
-          <DashboardNav items={navItems} />
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col md:flex-row gap-6 lg:gap-8">
+        <aside className="hidden md:block w-52 lg:w-60 shrink-0">
+          <div className="sticky top-24">
+            <DashboardNav items={navItems} />
+          </div>
         </aside>
         <main className="flex-1 min-w-0">
           {children}

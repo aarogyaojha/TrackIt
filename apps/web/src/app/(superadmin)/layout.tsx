@@ -54,7 +54,7 @@ export default function SuperAdminLayout({
 
   if (isInitializing) {
     return (
-      <div className="min-h-screen p-8 max-w-7xl mx-auto">
+      <div className="min-h-screen p-6 sm:p-8 w-full">
         <DashboardSkeleton />
       </div>
     );
