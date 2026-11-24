@@ -660,12 +660,22 @@ export class TicketsService {
 
     // 2. Workflows stages breakdown
     const workflows = await this.workflowsService.listByOrg(orgId);
+    const defaultWorkflow = workflows.find((w) => w.isDefault) || workflows[0];
+    const defaultWfIdStr = defaultWorkflow
+      ? defaultWorkflow._id.toString()
+      : '';
 
     const stageCountMap = new Map<string, number>();
     for (const item of raw.workflowStageCounts) {
-      if (item._id.workflowId && item._id.status) {
-        const key = `${item._id.workflowId.toString()}:${item._id.status.toLowerCase().trim()}`;
-        stageCountMap.set(key, item.count);
+      if (item._id.status) {
+        const wfId = item._id.workflowId
+          ? item._id.workflowId.toString()
+          : defaultWfIdStr;
+        if (wfId) {
+          const key = `${wfId}:${item._id.status.toLowerCase().trim()}`;
+          const current = stageCountMap.get(key) || 0;
+          stageCountMap.set(key, current + item.count);
+        }
       }
     }
 
