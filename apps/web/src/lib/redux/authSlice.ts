@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Role } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 
 /**
  * Auth state lives in src/lib/redux/ rather than inside features/auth/ because
@@ -14,7 +14,8 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  role: Role;
+  role: Role | string;
+  permissions?: Permission[];
   organizationId: string | null;
 }
 

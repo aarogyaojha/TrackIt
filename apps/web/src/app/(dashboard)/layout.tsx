@@ -12,17 +12,10 @@ import {
 import { ROUTES } from '@/constants/app.constants';
 import { useLogout } from '@/features/auth/api/useLogout';
 import { useRequireAuth } from '@/features/auth/hooks/useRequireAuth';
+import { usePermissions } from '@/features/auth/hooks/usePermissions';
 import { DashboardShell } from '@/features/dashboard/components/DashboardShell';
 import { DashboardSkeleton } from '@/components/skeletons/DashboardSkeleton';
 import { NavItem } from '@/components/dashboard-nav/DashboardNav';
-
-const ORG_NAV_ITEMS: NavItem[] = [
-  { label: 'Overview', href: ROUTES.DASHBOARD, icon: LayoutDashboardIcon },
-  { label: 'Tickets', href: ROUTES.TICKETS, icon: TicketIcon },
-  { label: 'Workflows', href: ROUTES.WORKFLOWS, icon: GitBranchIcon },
-  { label: 'Team', href: ROUTES.TEAM, icon: UsersIcon },
-  { label: 'Settings', href: ROUTES.SETTINGS, icon: SettingsIcon },
-];
 
 export default function DashboardLayout({
   children,
@@ -31,7 +24,39 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { user, isInitializing } = useRequireAuth();
+  const permissions = usePermissions();
   const { mutate: logout } = useLogout();
+
+  const navItems = React.useMemo(() => {
+    const items: NavItem[] = [
+      { label: 'Overview', href: ROUTES.DASHBOARD, icon: LayoutDashboardIcon },
+    ];
+    if (permissions.canViewTickets) {
+      items.push({ label: 'Tickets', href: ROUTES.TICKETS, icon: TicketIcon });
+    }
+    if (permissions.canViewWorkflows) {
+      items.push({
+        label: 'Workflows',
+        href: ROUTES.WORKFLOWS,
+        icon: GitBranchIcon,
+      });
+    }
+    if (permissions.canViewUsers) {
+      items.push({ label: 'Team', href: ROUTES.TEAM, icon: UsersIcon });
+    }
+    if (
+      permissions.isOrgAdmin ||
+      permissions.canViewQr ||
+      permissions.canViewSubscription
+    ) {
+      items.push({
+        label: 'Settings',
+        href: ROUTES.SETTINGS,
+        icon: SettingsIcon,
+      });
+    }
+    return items;
+  }, [permissions]);
 
   const handleLogout = () => {
     logout(undefined, {
@@ -57,7 +82,7 @@ export default function DashboardLayout({
     <DashboardShell
       user={user}
       onLogout={handleLogout}
-      navItems={ORG_NAV_ITEMS}
+      navItems={navItems}
     >
       {children}
     </DashboardShell>

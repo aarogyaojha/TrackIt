@@ -9,6 +9,53 @@ export const DASHBOARD_COPY = {
   NAVIGATION_TITLE: 'Navigation',
 } as const;
 
+export const DASHBOARD_METRICS_COPY = {
+  TOTAL_TITLE: 'Total Tickets',
+  TOTAL_DESC: 'All tickets logged in organization',
+  ACTIVE_TITLE: 'Active in Progress',
+  ACTIVE_DESC: 'Tickets currently being processed',
+  COMPLETED_TITLE: 'Completed & Delivered',
+  COMPLETED_DESC: 'Successfully fulfilled tickets',
+  CANCELLED_TITLE: 'Cancelled Orders',
+  CANCELLED_DESC: 'Voided or cancelled tickets',
+  COMPLETION_RATE: 'completion rate',
+} as const;
+
+export const DASHBOARD_WORKFLOW_COPY = {
+  TITLE: 'Workflow Stage Pipeline',
+  DESCRIPTION:
+    'Live ticket distribution across custom stage sequences for active workflows.',
+  WORKFLOW_SELECT_LABEL: 'Select Workflow',
+  DEFAULT_BADGE: 'Default Workflow',
+  TOTAL_WORKFLOW_TICKETS: 'tickets in workflow',
+  NO_WORKFLOWS: 'No active workflows configured for this organization.',
+  NO_TICKETS: 'No tickets currently assigned to this workflow.',
+  STAGE_PERCENTAGE: 'of workflow tickets',
+} as const;
+
+export const DASHBOARD_TEAM_COPY = {
+  TITLE: 'Team Member Performance',
+  DESCRIPTION:
+    'Staff workload distribution, tickets created, and completed service orders.',
+  MEMBER_HEADER: 'Staff Member',
+  ROLE_HEADER: 'Role',
+  CREATED_HEADER: 'Created',
+  COMPLETED_HEADER: 'Completed',
+  UPDATES_HEADER: 'Status Actions',
+  EMPTY: 'No staff members found.',
+  SUMMARY_LABEL: 'Staff Contributors',
+} as const;
+
+export const DASHBOARD_ACTIVITY_COPY = {
+  TITLE: 'Recent Ticket Activity',
+  DESCRIPTION: 'Latest ticket progress and customer service items.',
+  VIEW_ALL_BUTTON: 'View All Tickets',
+  EMPTY: 'No recent ticket activity logged yet.',
+  CODE_LABEL: 'Code',
+  CUSTOMER_LABEL: 'Customer',
+  ITEM_LABEL: 'Item',
+} as const;
+
 export const COUNTER_QR_COPY = {
   TITLE: 'Customer Live Tracking QR Code',
   DESCRIPTION:
