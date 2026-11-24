@@ -139,124 +139,129 @@ function RoleFormInner({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 py-2">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="role-name">{ROLES_COPY.FORM.NAME_LABEL}</Label>
-          <Input
-            id="role-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder={ROLES_COPY.FORM.NAME_PLACEHOLDER}
-            disabled={isSystemRole || isSaving}
-            required
-          />
-        </div>
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col flex-1 min-h-0 overflow-hidden"
+    >
+      <div className="flex-1 overflow-y-auto pr-1 py-1 space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="role-name">{ROLES_COPY.FORM.NAME_LABEL}</Label>
+            <Input
+              id="role-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={ROLES_COPY.FORM.NAME_PLACEHOLDER}
+              disabled={isSystemRole || isSaving}
+              required
+            />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="role-key">{ROLES_COPY.FORM.KEY_LABEL}</Label>
-          <Input
-            id="role-key"
-            value={key}
-            onChange={(e) =>
-              setKey(e.target.value.toUpperCase().replace(/\s+/g, '_'))
-            }
-            placeholder={ROLES_COPY.FORM.KEY_PLACEHOLDER}
-            disabled={isEditing || isSaving}
-            required
-          />
-          <p className="text-xs text-muted-foreground">
-            {ROLES_COPY.FORM.KEY_HELP}
-          </p>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="role-description">
-          {ROLES_COPY.FORM.DESCRIPTION_LABEL}
-        </Label>
-        <Textarea
-          id="role-description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder={ROLES_COPY.FORM.DESCRIPTION_PLACEHOLDER}
-          rows={2}
-          disabled={isSaving}
-        />
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between border-b pb-2">
-          <div>
-            <Label className="text-base font-semibold">
-              {ROLES_COPY.FORM.PERMISSIONS_LABEL}
-            </Label>
+          <div className="space-y-2">
+            <Label htmlFor="role-key">{ROLES_COPY.FORM.KEY_LABEL}</Label>
+            <Input
+              id="role-key"
+              value={key}
+              onChange={(e) =>
+                setKey(e.target.value.toUpperCase().replace(/\s+/g, '_'))
+              }
+              placeholder={ROLES_COPY.FORM.KEY_PLACEHOLDER}
+              disabled={isEditing || isSaving}
+              required
+            />
             <p className="text-xs text-muted-foreground">
-              {selectedPermissions.length} permission(s) granted
+              {ROLES_COPY.FORM.KEY_HELP}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSelectAll}
-            >
-              {ROLES_COPY.FORM.SELECT_ALL}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleDeselectAll}
-            >
-              {ROLES_COPY.FORM.DESELECT_ALL}
-            </Button>
-          </div>
         </div>
 
-        <div className="space-y-5">
-          {PERMISSION_GROUPS.map((group) => (
-            <div
-              key={group.category}
-              className="rounded-lg border p-4 bg-muted/20 space-y-3"
-            >
-              <h4 className="font-medium text-sm text-foreground">
-                {group.category}
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {group.permissions.map((perm) => {
-                  const isChecked = selectedPermissions.includes(perm.key);
-                  return (
-                    <label
-                      key={perm.key}
-                      className="flex items-start gap-3 p-2.5 rounded-md border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => togglePermission(perm.key)}
-                        disabled={isSaving}
-                        className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary"
-                      />
-                      <div className="space-y-0.5">
-                        <p className="text-sm font-medium leading-none">
-                          {perm.label}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {perm.description}
-                        </p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
+        <div className="space-y-2">
+          <Label htmlFor="role-description">
+            {ROLES_COPY.FORM.DESCRIPTION_LABEL}
+          </Label>
+          <Textarea
+            id="role-description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={ROLES_COPY.FORM.DESCRIPTION_PLACEHOLDER}
+            rows={2}
+            disabled={isSaving}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b pb-2 sticky top-0 bg-popover/90 backdrop-blur-xs z-10 pt-1">
+            <div>
+              <Label className="text-base font-semibold">
+                {ROLES_COPY.FORM.PERMISSIONS_LABEL}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {selectedPermissions.length} permission(s) granted
+              </p>
             </div>
-          ))}
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+              >
+                {ROLES_COPY.FORM.SELECT_ALL}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleDeselectAll}
+              >
+                {ROLES_COPY.FORM.DESELECT_ALL}
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-5">
+            {PERMISSION_GROUPS.map((group) => (
+              <div
+                key={group.category}
+                className="rounded-lg border p-4 bg-muted/20 space-y-3"
+              >
+                <h4 className="font-medium text-sm text-foreground">
+                  {group.category}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {group.permissions.map((perm) => {
+                    const isChecked = selectedPermissions.includes(perm.key);
+                    return (
+                      <label
+                        key={perm.key}
+                        className="flex items-start gap-3 p-2.5 rounded-md border bg-card hover:bg-accent/50 cursor-pointer transition-colors"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => togglePermission(perm.key)}
+                          disabled={isSaving}
+                          className="mt-1 h-4 w-4 rounded border-input text-primary focus:ring-primary"
+                        />
+                        <div className="space-y-0.5">
+                          <p className="text-sm font-medium leading-none">
+                            {perm.label}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {perm.description}
+                          </p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <DialogFooter className="pt-4 border-t">
+      <DialogFooter className="pt-4 border-t border-border/40 shrink-0 mt-3 gap-2 sm:gap-0">
         <Button
           type="button"
           variant="outline"
@@ -287,8 +292,8 @@ export function RoleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-full sm:max-w-3xl lg:max-w-4xl max-h-[88vh] flex flex-col p-6 overflow-hidden gap-0">
+        <DialogHeader className="pb-4 shrink-0">
           <DialogTitle>
             {isEditing
               ? ROLES_COPY.FORM.EDIT_TITLE

@@ -171,7 +171,7 @@ export function EditTeamMemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{TEAM_COPY.EDIT_DIALOG.TITLE}</DialogTitle>
           <DialogDescription>

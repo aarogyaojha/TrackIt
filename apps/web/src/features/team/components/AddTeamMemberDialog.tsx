@@ -181,7 +181,7 @@ export function AddTeamMemberDialog({
 }: AddTeamMemberDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-full sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{TEAM_COPY.ADD_DIALOG.TITLE}</DialogTitle>
           <DialogDescription>
