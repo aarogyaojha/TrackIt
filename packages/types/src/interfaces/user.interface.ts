@@ -1,10 +1,12 @@
 import { Role } from '../enums/role.enum';
+import { Permission } from '../enums/permission.enum';
 
 export interface UserResponse {
   id: string;
   email: string;
   name: string;
   role: Role | string;
+  permissions?: Permission[];
   organizationId: string | null;
   isActive: boolean;
   createdAt?: string;

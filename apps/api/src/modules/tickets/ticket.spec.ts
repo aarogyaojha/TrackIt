@@ -10,6 +10,8 @@ import { SubscriptionDocument } from '../subscriptions/subscription.schema';
 import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { WorkflowDocument } from '../workflows/workflow.schema';
 import { WorkflowsService } from '../workflows/workflow.service';
+import { UserDocument } from '../users/user.schema';
+import { UsersService } from '../users/user.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
 import { TicketsRepository } from './ticket.repository';
@@ -21,6 +23,7 @@ describe('TicketsService', () => {
   let ticketsRepository: jest.Mocked<TicketsRepository>;
   let organizationsService: jest.Mocked<OrganizationsService>;
   let subscriptionsService: jest.Mocked<SubscriptionsService>;
+  let usersService: jest.Mocked<UsersService>;
 
   const mockOrgId = new Types.ObjectId();
   const mockUserId = new Types.ObjectId();
@@ -86,6 +89,7 @@ describe('TicketsService', () => {
       countActiveByOrganization: jest.fn(),
       findByOrgAndCode: jest.fn(),
       findByOrgAndPhone: jest.fn(),
+      getDashboardStatsRaw: jest.fn(),
     };
 
     const mockOrgsSvc: Partial<jest.Mocked<OrganizationsService>> = {
@@ -111,6 +115,10 @@ describe('TicketsService', () => {
         .mockResolvedValue([{ ...mockDefaultWorkflow, isActive: true } as unknown as WorkflowDocument]),
     };
 
+    const mockUsersSvc: Partial<jest.Mocked<UsersService>> = {
+      listStaffByOrganization: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TicketsService,
@@ -130,6 +138,10 @@ describe('TicketsService', () => {
           provide: WorkflowsService,
           useValue: mockWfSvc,
         },
+        {
+          provide: UsersService,
+          useValue: mockUsersSvc,
+        },
       ],
     }).compile();
 
@@ -137,6 +149,7 @@ describe('TicketsService', () => {
     ticketsRepository = module.get(TicketsRepository);
     organizationsService = module.get(OrganizationsService);
     subscriptionsService = module.get(SubscriptionsService);
+    usersService = module.get(UsersService);
   });
 
   describe('create', () => {
@@ -713,6 +726,94 @@ describe('TicketsService', () => {
       await expect(
         service.lookupPublic('apex-bikes', 'nonexistent'),
       ).rejects.toThrow(AppException);
+    });
+  });
+
+  describe('getDashboardStats', () => {
+    it('returns calculated overview, workflow stages, and staff performance', async () => {
+      ticketsRepository.getDashboardStatsRaw.mockResolvedValue({
+        categoryCounts: [
+          { _id: StatusCategory.INITIAL, count: 5 },
+          { _id: StatusCategory.IN_PROGRESS, count: 10 },
+          { _id: StatusCategory.READY, count: 3 },
+          { _id: StatusCategory.COMPLETED, count: 20 },
+          { _id: StatusCategory.CANCELLED, count: 2 },
+        ],
+        workflowStageCounts: [
+          {
+            _id: {
+              workflowId: mockDefaultWorkflow._id,
+              status: TicketStatus.RECEIVED,
+            },
+            count: 5,
+          },
+          {
+            _id: {
+              workflowId: mockDefaultWorkflow._id,
+              status: TicketStatus.IN_PROGRESS,
+            },
+            count: 10,
+          },
+        ],
+        createdCounts: [{ _id: mockUserId, count: 15 }],
+        updateCounts: [{ _id: mockUserId, count: 30 }],
+        completedCounts: [{ _id: mockUserId, count: 20 }],
+        recentTickets: [mockTicketDoc({ code: 'TK-RECENT1' })],
+      });
+
+      usersService.listStaffByOrganization.mockResolvedValue([
+        {
+          _id: mockUserId,
+          name: 'Staff Alice',
+          email: 'alice@example.com',
+          role: 'ORG_STAFF',
+        } as unknown as UserDocument,
+      ]);
+
+      const result = await service.getDashboardStats(
+        mockOrgId.toString(),
+        mockUserId.toString(),
+        true,
+      );
+
+      expect(result.overview.totalTickets).toBe(40);
+      expect(result.overview.activeTickets).toBe(18); // 5 + 10 + 3
+      expect(result.overview.completedTickets).toBe(20);
+      expect(result.overview.cancelledTickets).toBe(2);
+      expect(result.overview.completionRate).toBe(50); // 20 / 40 * 100
+
+      expect(result.workflows).toHaveLength(1);
+      expect(result.workflows[0].stages).toHaveLength(5);
+
+      expect(result.staffPerformance).toHaveLength(1);
+      expect(result.staffPerformance[0].name).toBe('Staff Alice');
+      expect(result.staffPerformance[0].ticketsCreated).toBe(15);
+      expect(result.staffPerformance[0].ticketsCompleted).toBe(20);
+      expect(result.staffPerformance[0].totalStatusUpdates).toBe(30);
+
+      expect(result.recentActivity).toHaveLength(1);
+      expect(result.recentActivity[0].code).toBe('TK-RECENT1');
+    });
+
+    it('omits staff performance details when user lacks USERS_READ permission', async () => {
+      ticketsRepository.getDashboardStatsRaw.mockResolvedValue({
+        categoryCounts: [{ _id: StatusCategory.COMPLETED, count: 5 }],
+        workflowStageCounts: [],
+        createdCounts: [{ _id: mockUserId, count: 5 }],
+        updateCounts: [{ _id: mockUserId, count: 5 }],
+        completedCounts: [{ _id: mockUserId, count: 5 }],
+        recentTickets: [],
+      });
+
+      const result = await service.getDashboardStats(
+        mockOrgId.toString(),
+        mockUserId.toString(),
+        false,
+      );
+
+      expect(result.overview.totalTickets).toBe(5);
+      expect(result.staffPerformance).toEqual([]);
+      expect(usersService.listStaffByOrganization).not.toHaveBeenCalled();
     });
   });
 });

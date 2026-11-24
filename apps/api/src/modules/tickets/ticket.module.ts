@@ -3,6 +3,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { OrganizationsModule } from '../organizations/organization.module';
 import { SubscriptionsModule } from '../subscriptions/subscription.module';
 import { WorkflowsModule } from '../workflows/workflow.module';
+import { UsersModule } from '../users/user.module';
+import { RolesModule } from '../roles/role.module';
 import { PublicTicketsController } from './public-ticket.controller';
 import { TicketsController } from './ticket.controller';
 import { TicketsRepository } from './ticket.repository';
@@ -15,6 +17,8 @@ import { TicketsService } from './ticket.service';
     forwardRef(() => OrganizationsModule),
     forwardRef(() => SubscriptionsModule),
     forwardRef(() => WorkflowsModule),
+    forwardRef(() => UsersModule),
+    forwardRef(() => RolesModule),
   ],
   controllers: [TicketsController, PublicTicketsController],
   providers: [TicketsRepository, TicketsService],

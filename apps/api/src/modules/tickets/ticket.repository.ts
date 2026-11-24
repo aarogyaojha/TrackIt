@@ -172,4 +172,95 @@ export class TicketsRepository extends BaseRepository<TicketDocument> {
 
     return count > 0;
   }
+
+  async getDashboardStatsRaw(organizationId: string | Types.ObjectId) {
+    const orgObjectId =
+      typeof organizationId === 'string'
+        ? new Types.ObjectId(organizationId)
+        : organizationId;
+
+    const [
+      categoryCounts,
+      workflowStageCounts,
+      createdCounts,
+      updateCounts,
+      completedCounts,
+      recentTickets,
+    ] = await Promise.all([
+      this.model.aggregate<{ _id: string | null; count: number }>([
+        { $match: { organizationId: orgObjectId } },
+        { $group: { _id: '$statusCategory', count: { $sum: 1 } } },
+      ]),
+      this.model.aggregate<{
+        _id: { workflowId: Types.ObjectId | null; status: string };
+        count: number;
+      }>([
+        { $match: { organizationId: orgObjectId } },
+        {
+          $group: {
+            _id: { workflowId: '$workflowId', status: '$status' },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      this.model.aggregate<{ _id: Types.ObjectId; count: number }>([
+        {
+          $match: {
+            organizationId: orgObjectId,
+            createdBy: { $exists: true, $ne: null },
+          },
+        },
+        { $group: { _id: '$createdBy', count: { $sum: 1 } } },
+      ]),
+      this.model.aggregate<{ _id: Types.ObjectId; count: number }>([
+        { $match: { organizationId: orgObjectId } },
+        { $unwind: '$statusHistory' },
+        {
+          $match: {
+            'statusHistory.changedBy': { $exists: true, $ne: null },
+          },
+        },
+        { $group: { _id: '$statusHistory.changedBy', count: { $sum: 1 } } },
+      ]),
+      this.model.aggregate<{ _id: Types.ObjectId; count: number }>([
+        {
+          $match: {
+            organizationId: orgObjectId,
+            statusCategory: StatusCategory.COMPLETED,
+          },
+        },
+        { $unwind: '$statusHistory' },
+        {
+          $group: {
+            _id: '$_id',
+            lastChangedBy: { $last: '$statusHistory.changedBy' },
+          },
+        },
+        {
+          $match: {
+            lastChangedBy: { $exists: true, $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: '$lastChangedBy',
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+      this.find(
+        { organizationId: orgObjectId },
+        { sort: { updatedAt: -1 }, limit: 5 },
+      ),
+    ]);
+
+    return {
+      categoryCounts,
+      workflowStageCounts,
+      createdCounts,
+      updateCounts,
+      completedCounts,
+      recentTickets,
+    };
+  }
 }

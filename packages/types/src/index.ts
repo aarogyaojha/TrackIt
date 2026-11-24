@@ -8,3 +8,5 @@ export * from './interfaces/plan-limits.interface';
 export * from './interfaces/workflow.interface';
 export * from './interfaces/role.interface';
 export * from './interfaces/user.interface';
+export * from './interfaces/ticket.interface';
+

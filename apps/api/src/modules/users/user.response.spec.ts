@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { Role } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { toUserResponse } from './user.response';
 import { UserDocument } from './user.schema';
 
@@ -75,5 +75,29 @@ describe('toUserResponse', () => {
     expect('__v' in result).toBe(false);
     expect('passwordHash' in result).toBe(false);
     expect('refreshTokenHash' in result).toBe(false);
+  });
+
+  it('includes permissions when provided and non-empty', () => {
+    const rawUserId = new Types.ObjectId();
+    const fakeUserDoc = {
+      _id: rawUserId,
+      email: 'tech@example.com',
+      name: 'Tech Lead',
+      role: Role.ORG_ADMIN,
+      organizationId: null,
+      isActive: true,
+      __v: 0,
+    } as unknown as UserDocument;
+
+    const result = toUserResponse(fakeUserDoc, [
+      Permission.TICKETS_READ,
+      Permission.TICKETS_CREATE,
+    ]);
+
+    expect(result.permissions).toEqual([
+      Permission.TICKETS_READ,
+      Permission.TICKETS_CREATE,
+    ]);
+    expect(Object.keys(result).includes('permissions')).toBe(true);
   });
 });

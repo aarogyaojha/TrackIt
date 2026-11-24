@@ -51,7 +51,7 @@ export class UsersController {
   @ApiStandardErrors(ErrorCode.UNAUTHORIZED, ErrorCode.FORBIDDEN)
   async listStaff(@CurrentOrg() orgId: string) {
     const users = await this.usersService.listStaffByOrganization(orgId);
-    return users.map(toUserResponse);
+    return users.map((u) => toUserResponse(u));
   }
 
   @Post()

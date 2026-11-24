@@ -11,6 +11,7 @@ import { ErrorCode } from '../../constants';
 import { OrganizationsService } from '../organizations/organization.service';
 import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/user.service';
+import { RolesService } from '../roles/role.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -48,6 +49,10 @@ describe('AuthService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
+    const mockRolesService = {
+      getPermissionsForRole: jest.fn().mockResolvedValue([]),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -66,6 +71,10 @@ describe('AuthService', () => {
         {
           provide: AppConfigService,
           useValue: mockAppConfigService,
+        },
+        {
+          provide: RolesService,
+          useValue: mockRolesService,
         },
       ],
     }).compile();

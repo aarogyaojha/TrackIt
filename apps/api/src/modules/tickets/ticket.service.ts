@@ -1,12 +1,21 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { QueryFilter, Types } from 'mongoose';
-import { OrgStatus, StatusCategory, TicketStatus } from '@trackit/types';
+import {
+  OrgStatus,
+  StaffPerformanceStat,
+  StatusCategory,
+  TicketDashboardStatsResponse,
+  TicketStatus,
+  WorkflowStageStat,
+  WorkflowStatsSummary,
+} from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { OrganizationsService } from '../organizations/organization.service';
 import { SubscriptionsService } from '../subscriptions/subscription.service';
 import { WorkflowsService } from '../workflows/workflow.service';
 import { WorkflowDocument } from '../workflows/workflow.schema';
+import { UsersService } from '../users/user.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
 import { PublicCreateTicketDto } from './dto/public-create-ticket.dto';
@@ -23,6 +32,8 @@ export class TicketsService {
     private readonly subscriptionsService: SubscriptionsService,
     @Inject(forwardRef(() => WorkflowsService))
     private readonly workflowsService: WorkflowsService,
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) { }
 
   async create(
@@ -611,5 +622,142 @@ export class TicketsService {
     await this.subscriptionsService.incrementTicketsThisMonth(orgObjectId);
 
     return { ticket, orgName: org.name, workflow: workflow || undefined };
+  }
+
+  async getDashboardStats(
+    orgId: string,
+    currentUserId: string,
+    hasUsersReadPermission: boolean,
+  ): Promise<TicketDashboardStatsResponse> {
+    const raw = await this.ticketsRepository.getDashboardStatsRaw(orgId);
+
+    // 1. Overview KPI counts
+    let totalTickets = 0;
+    let activeTickets = 0;
+    let completedTickets = 0;
+    let cancelledTickets = 0;
+
+    for (const item of raw.categoryCounts) {
+      totalTickets += item.count;
+      const cat = item._id as StatusCategory;
+      if (
+        cat === StatusCategory.INITIAL ||
+        cat === StatusCategory.IN_PROGRESS ||
+        cat === StatusCategory.READY
+      ) {
+        activeTickets += item.count;
+      } else if (cat === StatusCategory.COMPLETED) {
+        completedTickets += item.count;
+      } else if (cat === StatusCategory.CANCELLED) {
+        cancelledTickets += item.count;
+      }
+    }
+
+    const completionRate =
+      totalTickets > 0
+        ? Math.round((completedTickets / totalTickets) * 100)
+        : 0;
+
+    // 2. Workflows stages breakdown
+    const workflows = await this.workflowsService.listByOrg(orgId);
+
+    const stageCountMap = new Map<string, number>();
+    for (const item of raw.workflowStageCounts) {
+      if (item._id.workflowId && item._id.status) {
+        const key = `${item._id.workflowId.toString()}:${item._id.status.toLowerCase().trim()}`;
+        stageCountMap.set(key, item.count);
+      }
+    }
+
+    const workflowStats: WorkflowStatsSummary[] = workflows.map((wf) => {
+      const wfIdStr = wf._id.toString();
+      let wfTotal = 0;
+      const stages: WorkflowStageStat[] = (wf.statuses || []).map((s) => {
+        const count =
+          stageCountMap.get(`${wfIdStr}:${s.key.toLowerCase().trim()}`) || 0;
+        wfTotal += count;
+        return {
+          key: s.key,
+          name: s.name,
+          category: s.category,
+          color: s.color || 'default',
+          count,
+        };
+      });
+
+      return {
+        workflowId: wfIdStr,
+        workflowName: wf.name,
+        isDefault: Boolean(wf.isDefault),
+        totalTickets: wfTotal,
+        stages,
+      };
+    });
+
+    // 3. Staff performance
+    let staffPerformance: StaffPerformanceStat[] = [];
+    if (hasUsersReadPermission) {
+      const staffMembers =
+        await this.usersService.listStaffByOrganization(orgId);
+
+      const createdMap = new Map<string, number>();
+      for (const item of raw.createdCounts) {
+        if (item._id) createdMap.set(item._id.toString(), item.count);
+      }
+
+      const updateMap = new Map<string, number>();
+      for (const item of raw.updateCounts) {
+        if (item._id) updateMap.set(item._id.toString(), item.count);
+      }
+
+      const completedMap = new Map<string, number>();
+      for (const item of raw.completedCounts) {
+        if (item._id) completedMap.set(item._id.toString(), item.count);
+      }
+
+      staffPerformance = staffMembers.map((member) => {
+        const memberIdStr = member._id.toString();
+        return {
+          userId: memberIdStr,
+          name: member.name,
+          email: member.email,
+          role: member.role,
+          ticketsCreated: createdMap.get(memberIdStr) || 0,
+          ticketsCompleted: completedMap.get(memberIdStr) || 0,
+          totalStatusUpdates: updateMap.get(memberIdStr) || 0,
+        };
+      });
+
+      staffPerformance.sort(
+        (a, b) =>
+          b.ticketsCompleted +
+          b.ticketsCreated -
+          (a.ticketsCompleted + a.ticketsCreated),
+      );
+    }
+
+    // 4. Recent activity
+    const recentActivity = raw.recentTickets.map((t) => ({
+      id: t._id.toString(),
+      code: t.code,
+      customerName: t.customerName,
+      itemDescription: t.itemDescription,
+      status: t.status,
+      statusCategory: t.statusCategory || StatusCategory.INITIAL,
+      updatedAt: (t.updatedAt || t.createdAt || new Date()).toISOString(),
+    }));
+
+    return {
+      overview: {
+        totalTickets,
+        activeTickets,
+        completedTickets,
+        cancelledTickets,
+        completionRate,
+      },
+      workflows: workflowStats,
+      staffPerformance,
+      recentActivity,
+    };
   }
 }

@@ -67,6 +67,10 @@ export const TICKETS_SWAGGER = {
     'Searches for customer tickets by code or phone number and returns sanitized public tracking details.',
   LOOKUP_PUBLIC_OK_DESCRIPTION:
     'Matching public tickets retrieved successfully.',
+  STATS_SUMMARY: 'Get organization ticket dashboard statistics',
+  STATS_DESCRIPTION:
+    'Retrieves comprehensive ticket metrics, stage breakdown across workflows, staff member performance, and recent activity for the organization dashboard.',
+  STATS_OK_DESCRIPTION: 'Ticket dashboard statistics retrieved successfully.',
 } as const;
 
 export const MIN_CUSTOMER_NAME_LENGTH = 2;

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  forwardRef,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -17,7 +19,7 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { Permission } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
@@ -29,6 +31,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import { OrganizationsService } from '../organizations/organization.service';
+import { RolesService } from '../roles/role.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { ListTicketsQueryDto } from './dto/list-tickets-query.dto';
 import { UpdateTicketStatusDto } from './dto/update-ticket-status.dto';
@@ -45,6 +48,8 @@ export class TicketsController {
     private readonly ticketsService: TicketsService,
     private readonly organizationsService: OrganizationsService,
     private readonly appConfigService: AppConfigService,
+    @Inject(forwardRef(() => RolesService))
+    private readonly rolesService: RolesService,
   ) {}
 
   @Post()
@@ -128,6 +133,37 @@ export class TicketsController {
         totalPages,
       },
     };
+  }
+
+  @Get('stats/summary')
+  @RequirePermissions(Permission.TICKETS_READ)
+  @ApiOperation({
+    summary: TICKETS_SWAGGER.STATS_SUMMARY,
+    description: TICKETS_SWAGGER.STATS_DESCRIPTION,
+  })
+  @ApiOkResponse({
+    description: TICKETS_SWAGGER.STATS_OK_DESCRIPTION,
+  })
+  @ApiStandardErrors(
+    ErrorCode.UNAUTHORIZED,
+    ErrorCode.FORBIDDEN,
+    ErrorCode.NOT_FOUND,
+  )
+  async getDashboardStats(
+    @CurrentOrg() orgId: string,
+    @CurrentUser('userId') userId: string,
+    @CurrentUser('role') role: string,
+  ) {
+    const isSuperAdmin = role === Role.SUPERADMIN || role === 'SUPERADMIN';
+    const isOrgAdmin = role === Role.ORG_ADMIN || role === 'ORG_ADMIN';
+    const userPermissions = await this.rolesService.getPermissionsForRole(role);
+    const hasUsersRead =
+      isSuperAdmin ||
+      isOrgAdmin ||
+      userPermissions.includes(Permission.PLATFORM_ALL) ||
+      userPermissions.includes(Permission.USERS_READ);
+
+    return this.ticketsService.getDashboardStats(orgId, userId, hasUsersRead);
   }
 
   @Get(':id')

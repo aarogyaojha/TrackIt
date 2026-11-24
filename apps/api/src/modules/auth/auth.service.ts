@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
@@ -10,6 +10,7 @@ import { OrganizationsService } from '../organizations/organization.service';
 import { toUserResponse, UserResponse } from '../users/user.response';
 import { UserDocument } from '../users/user.schema';
 import { UsersService } from '../users/user.service';
+import { RolesService } from '../roles/role.service';
 
 export interface AuthTokens {
   accessToken: string;
@@ -24,6 +25,8 @@ export class AuthService {
     private readonly organizationsService: OrganizationsService,
     private readonly jwtService: JwtService,
     private readonly appConfigService: AppConfigService,
+    @Inject(forwardRef(() => RolesService))
+    private readonly rolesService: RolesService,
   ) {}
 
   private hashToken(token: string): string {
@@ -110,10 +113,12 @@ export class AuthService {
     const refreshTokenHash = this.hashToken(refreshToken);
     await this.usersService.updateRefreshTokenHash(userId, refreshTokenHash);
 
+    const permissions = await this.rolesService.getPermissionsForRole(user.role);
+
     return {
       accessToken,
       refreshToken,
-      user: toUserResponse(user),
+      user: toUserResponse(user, permissions),
     };
   }
 
