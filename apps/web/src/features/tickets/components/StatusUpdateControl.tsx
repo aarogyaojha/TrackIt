@@ -143,7 +143,12 @@ export function StatusUpdateControl({
           <SelectTrigger className="w-full">
             <SelectValue
               placeholder={TICKET_DETAIL_COPY.UPDATE_STATUS_PLACEHOLDER}
-            />
+            >
+              {(val: string | null) => {
+                const opt = allowedOptions.find((o) => o.value === val);
+                return opt ? opt.label : val;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {allowedOptions.map((opt) => (

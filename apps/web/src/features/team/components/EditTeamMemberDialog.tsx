@@ -113,7 +113,12 @@ function EditTeamMemberInner({
         </Label>
         <Select value={role} onValueChange={(val) => val && setRole(val)}>
           <SelectTrigger id="edit-staff-role" className="w-full">
-            <SelectValue />
+            <SelectValue>
+              {(val: string | null) => {
+                const r = assignableRoles.find((role) => role.key === val);
+                return r ? r.name : val;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {assignableRoles.map((r) => (

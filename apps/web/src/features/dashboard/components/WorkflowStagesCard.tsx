@@ -120,7 +120,17 @@ export function WorkflowStagesCard({
               <SelectTrigger className="w-full">
                 <SelectValue
                   placeholder={DASHBOARD_WORKFLOW_COPY.WORKFLOW_SELECT_LABEL}
-                />
+                >
+                  {(val: string | null) => {
+                    const wf = workflows.find((w) => w.workflowId === val);
+                    if (!wf) return null;
+                    return `${wf.workflowName}${
+                      wf.isDefault
+                        ? ` (${DASHBOARD_WORKFLOW_COPY.DEFAULT_BADGE})`
+                        : ''
+                    }`;
+                  }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {workflows.map((wf) => (

@@ -146,7 +146,12 @@ function AddTeamMemberInner({ onSuccess, onCancel }: AddTeamMemberInnerProps) {
         <Label htmlFor="staff-role">{TEAM_COPY.ADD_DIALOG.ROLE_LABEL}</Label>
         <Select value={role} onValueChange={(val) => val && setRole(val)}>
           <SelectTrigger id="staff-role" className="w-full">
-            <SelectValue placeholder={TEAM_COPY.ADD_DIALOG.ROLE_PLACEHOLDER} />
+            <SelectValue placeholder={TEAM_COPY.ADD_DIALOG.ROLE_PLACEHOLDER}>
+              {(val: string | null) => {
+                const r = assignableRoles.find((role) => role.key === val);
+                return r ? r.name : val;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {assignableRoles.map((r) => (

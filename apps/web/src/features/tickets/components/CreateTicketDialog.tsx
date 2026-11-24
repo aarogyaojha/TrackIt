@@ -205,7 +205,17 @@ export function CreateTicketDialog({
                         <SelectTrigger>
                           <SelectValue
                             placeholder={CREATE_TICKET_COPY.WORKFLOW_PLACEHOLDER}
-                          />
+                          >
+                            {(val: string | null) => {
+                              const wf = workflows.find((w) => w.id === val);
+                              if (!wf) return null;
+                              return `${wf.name}${
+                                wf.isDefault
+                                  ? ` ${CREATE_TICKET_COPY.DEFAULT_WORKFLOW_SUFFIX}`
+                                  : ''
+                              }`;
+                            }}
+                          </SelectValue>
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

@@ -176,7 +176,15 @@ export function PublicCheckInView({ intake }: PublicCheckInViewProps) {
                           placeholder={
                             PUBLIC_INTAKE_COPY.SERVICE_TYPE_PLACEHOLDER
                           }
-                        />
+                        >
+                          {(val: string | null) => {
+                            const wf = intake.workflows.find(
+                              (w) => w.id === val,
+                            );
+                            if (!wf) return null;
+                            return `${wf.name}${wf.isDefault ? ' (Standard)' : ''}`;
+                          }}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         {intake.workflows.map((wf) => (

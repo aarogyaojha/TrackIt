@@ -78,7 +78,14 @@ export function TicketFiltersBar({
           onValueChange={handleStatusSelect}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={TICKETS_LIST_COPY.STATUS_FILTER_ALL} />
+            <SelectValue placeholder={TICKETS_LIST_COPY.STATUS_FILTER_ALL}>
+              {(val: string | null) => {
+                if (!val || val === ALL_STATUS_VALUE) {
+                  return TICKETS_LIST_COPY.STATUS_FILTER_ALL;
+                }
+                return TICKET_STATUS_LABELS[val as TicketStatus] || val;
+              }}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_STATUS_VALUE}>

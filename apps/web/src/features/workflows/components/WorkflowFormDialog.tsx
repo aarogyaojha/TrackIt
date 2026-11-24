@@ -433,7 +433,14 @@ function WorkflowFormInner({
                     }
                   >
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue />
+                      <SelectValue>
+                        {(val: string | null) =>
+                          val
+                            ? STATUS_CATEGORY_LABELS[val as StatusCategory] ||
+                              val
+                            : null
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Object.values(StatusCategory).map((cat) => (
