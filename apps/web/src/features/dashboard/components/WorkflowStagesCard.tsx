@@ -92,12 +92,12 @@ export function WorkflowStagesCard({
   const workflowTotal = currentWorkflow?.totalTickets || 0;
 
   return (
-    <Card className="shadow-xs">
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b">
+    <Card className="shadow-xs h-full flex flex-col">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 pb-5 border-b">
         <div>
           <div className="flex items-center gap-2">
             <GitBranchIcon className="size-5 text-primary" />
-            <CardTitle className="text-lg">
+            <CardTitle className="text-xl">
               {DASHBOARD_WORKFLOW_COPY.TITLE}
             </CardTitle>
             {currentWorkflow.isDefault && (
@@ -106,18 +106,18 @@ export function WorkflowStagesCard({
               </Badge>
             )}
           </div>
-          <CardDescription className="mt-1">
+          <CardDescription className="mt-1 text-sm">
             {DASHBOARD_WORKFLOW_COPY.DESCRIPTION}
           </CardDescription>
         </div>
 
         {workflows.length > 1 && (
-          <div className="w-full sm:w-60">
+          <div className="w-full sm:w-64">
             <Select
               value={currentWorkflow.workflowId}
               onValueChange={(val) => val && setSelectedWorkflowId(val)}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full h-10 text-sm">
                 <SelectValue
                   placeholder={DASHBOARD_WORKFLOW_COPY.WORKFLOW_SELECT_LABEL}
                 >
@@ -147,23 +147,23 @@ export function WorkflowStagesCard({
         )}
       </CardHeader>
 
-      <CardContent className="pt-6 space-y-6">
-        <div className="flex items-center justify-between text-xs text-muted-foreground pb-2 border-b">
-          <span className="font-medium text-foreground">
+      <CardContent className="p-6 pt-5 flex-1 flex flex-col justify-between space-y-6">
+        <div className="flex items-center justify-between text-xs text-muted-foreground pb-3 border-b">
+          <span className="font-semibold text-sm text-foreground">
             {currentWorkflow.workflowName}
           </span>
-          <span>
-            <strong className="text-foreground">{workflowTotal}</strong>{' '}
+          <span className="text-xs">
+            <strong className="text-foreground text-sm font-bold">{workflowTotal}</strong>{' '}
             {DASHBOARD_WORKFLOW_COPY.TOTAL_WORKFLOW_TICKETS}
           </span>
         </div>
 
         {workflowTotal === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-sm text-muted-foreground text-center py-12">
             {DASHBOARD_WORKFLOW_COPY.NO_TICKETS}
           </p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {currentWorkflow.stages.map((stage) => {
               const percentage =
                 workflowTotal > 0
@@ -177,31 +177,31 @@ export function WorkflowStagesCard({
               return (
                 <div
                   key={stage.key}
-                  className="rounded-lg border bg-card p-4 space-y-3 shadow-2xs hover:border-foreground/30 transition-colors"
+                  className="rounded-xl border bg-card p-5 space-y-4 shadow-2xs hover:border-foreground/30 transition-colors min-h-[140px] flex flex-col justify-between"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h4 className="font-semibold text-sm leading-tight text-foreground">
+                      <h4 className="font-semibold text-base leading-tight text-foreground">
                         {stage.name}
                       </h4>
                       <Badge
                         variant={badgeVariant}
-                        className="text-[10px] mt-1.5 px-1.5 py-0"
+                        className="text-xs mt-2 px-2 py-0.5"
                       >
                         {categoryLabel}
                       </Badge>
                     </div>
-                    <span className="text-xl font-bold text-foreground">
+                    <span className="text-2xl font-extrabold text-foreground">
                       {stage.count}
                     </span>
                   </div>
 
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>{percentage}%</span>
                       <span>{DASHBOARD_WORKFLOW_COPY.STAGE_PERCENTAGE}</span>
                     </div>
-                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full bg-primary transition-all duration-300"
                         style={{ width: `${percentage}%` }}

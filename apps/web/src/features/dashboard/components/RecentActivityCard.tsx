@@ -51,27 +51,27 @@ export function RecentActivityCard({
 
   return (
     <Card className="shadow-xs flex flex-col h-full">
-      <CardHeader className="flex flex-row items-center justify-between pb-3 border-b">
+      <CardHeader className="flex flex-row items-center justify-between p-6 pb-5 border-b">
         <div>
           <div className="flex items-center gap-2">
             <ActivityIcon className="size-5 text-primary" />
-            <CardTitle className="text-lg">
+            <CardTitle className="text-xl">
               {DASHBOARD_ACTIVITY_COPY.TITLE}
             </CardTitle>
           </div>
-          <CardDescription className="mt-1">
+          <CardDescription className="mt-1 text-sm">
             {DASHBOARD_ACTIVITY_COPY.DESCRIPTION}
           </CardDescription>
         </div>
       </CardHeader>
 
-      <CardContent className="pt-4 flex-1 flex flex-col justify-between">
+      <CardContent className="p-6 pt-5 flex-1 flex flex-col justify-between">
         {recentActivity.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-sm text-muted-foreground text-center py-12">
             {DASHBOARD_ACTIVITY_COPY.EMPTY}
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {recentActivity.map((ticket) => {
               const badgeVariant =
                 STATUS_CATEGORY_BADGE_VARIANTS[ticket.statusCategory] ||
@@ -84,7 +84,7 @@ export function RecentActivityCard({
                 <Link
                   key={ticket.id}
                   href={`${ROUTES.TICKETS}/${ticket.id}`}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-muted/20 hover:bg-muted/40 transition-colors group"
+                  className="flex items-center justify-between p-3.5 rounded-xl border bg-muted/20 hover:bg-muted/40 transition-colors group"
                 >
                   <div className="min-w-0 pr-2">
                     <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export function RecentActivityCard({
                         {ticket.customerName}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                    <p className="text-xs text-muted-foreground truncate mt-1">
                       {ticket.itemDescription}
                     </p>
                   </div>
@@ -114,12 +114,12 @@ export function RecentActivityCard({
           </div>
         )}
 
-        <div className="pt-4 border-t mt-4">
+        <div className="pt-5 border-t mt-5">
           <Button
             variant="ghost"
             size="sm"
             asChild
-            className="w-full justify-center"
+            className="w-full justify-center h-10 font-medium"
           >
             <Link href={ROUTES.TICKETS}>
               {DASHBOARD_ACTIVITY_COPY.VIEW_ALL_BUTTON}

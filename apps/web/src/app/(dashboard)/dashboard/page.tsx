@@ -28,15 +28,15 @@ export default function DashboardPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Welcome Banner */}
       <Card className="shadow-xs">
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <CardHeader className="p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <CardTitle className="text-xl">
+            <CardTitle className="text-2xl font-bold tracking-tight">
               {DASHBOARD_COPY.WELCOME_TITLE}
             </CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1.5">
               {DASHBOARD_COPY.LOGGED_IN_AS}{' '}
               <span className="font-semibold text-foreground">
                 {user?.name || DASHBOARD_COPY.DEFAULT_USER_NAME}
@@ -46,8 +46,8 @@ export default function DashboardPage() {
           </div>
 
           {permissions.canCreateTickets && (
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <PlusIcon className="mr-1 size-4" />
+            <Button onClick={() => setCreateDialogOpen(true)} className="h-10 px-5 text-sm font-medium">
+              <PlusIcon className="mr-1.5 size-4" />
               {TICKETS_LIST_COPY.CREATE_BUTTON}
             </Button>
           )}
@@ -64,14 +64,14 @@ export default function DashboardPage() {
 
       {/* Workflow Stage Pipeline & Recent Activity (Gated by canViewTickets) */}
       {permissions.canViewTickets && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          <div className="lg:col-span-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+          <div className="lg:col-span-8 flex flex-col">
             <WorkflowStagesCard
               workflows={stats?.workflows}
               isLoading={isLoading}
             />
           </div>
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 flex flex-col">
             <RecentActivityCard
               recentActivity={stats?.recentActivity}
               isLoading={isLoading}
@@ -89,9 +89,9 @@ export default function DashboardPage() {
       )}
 
       {/* Operational Cards: Customer Counter QR & Plan Usage (Gated by canViewQr / canViewSubscription) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {permissions.canViewQr && <CounterQrCard />}
-        {permissions.canViewSubscription && <UsageSummary />}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-stretch">
+        {permissions.canViewQr && <div className="flex flex-col"><CounterQrCard /></div>}
+        {permissions.canViewSubscription && <div className="flex flex-col"><UsageSummary /></div>}
       </div>
 
       {permissions.canCreateTickets && (

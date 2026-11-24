@@ -86,26 +86,26 @@ export function UsageSummary() {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="shadow-xs h-full flex flex-col justify-between">
+      <CardHeader className="p-6 pb-5 border-b">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">
+          <CardTitle className="text-xl font-semibold">
             {SUBSCRIPTION_COPY.SECTION_TITLE}
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
               {SUBSCRIPTION_COPY.CURRENT_PLAN}:
             </span>
-            <Badge variant={getTierBadgeVariant(planTier)}>
+            <Badge variant={getTierBadgeVariant(planTier)} className="text-xs px-2.5 py-1">
               {planTier}
             </Badge>
           </div>
         </div>
-        <CardDescription>
+        <CardDescription className="mt-1.5 text-sm">
           {SUBSCRIPTION_COPY.SECTION_DESCRIPTION}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="p-6 pt-6 flex-1 flex flex-col justify-between space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {metrics.map((metric) => {
             const hasLimit = typeof metric.limit === 'number' && metric.limit > 0;
@@ -121,7 +121,7 @@ export function UsageSummary() {
             return (
               <div
                 key={metric.id}
-                className="rounded-lg border border-border bg-muted/20 p-4 space-y-3 min-w-0"
+                className="rounded-xl border border-border bg-muted/20 p-5 space-y-4 min-w-0 min-h-[110px] flex flex-col justify-between"
               >
                 <Progress
                   value={percentage}

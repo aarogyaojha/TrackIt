@@ -77,27 +77,27 @@ export function CounterQrCard() {
 
   return (
     <>
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
+      <Card className="shadow-xs h-full flex flex-col justify-between">
+        <CardHeader className="p-6 pb-5 border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <QrCodeIcon className="size-4" />
+              <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <QrCodeIcon className="size-5" />
               </div>
-              <CardTitle className="text-lg font-semibold">
+              <CardTitle className="text-xl font-semibold">
                 {COUNTER_QR_COPY.TITLE}
               </CardTitle>
             </div>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs px-2.5 py-1">
               {COUNTER_QR_COPY.COUNTER_BADGE}
             </Badge>
           </div>
-          <CardDescription className="text-sm text-muted-foreground mt-1">
+          <CardDescription className="text-sm text-muted-foreground mt-1.5">
             {COUNTER_QR_COPY.DESCRIPTION}
           </CardDescription>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-6 pt-6 flex-1 flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* QR Code Container */}
             <div className="p-3 bg-white rounded-xl shadow-xs border border-border/50 shrink-0">
