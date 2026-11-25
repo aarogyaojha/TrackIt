@@ -43,7 +43,11 @@ export const authSlice = createSlice({
       state.user = action.payload.user;
       state.isInitializing = false;
       if (typeof document !== 'undefined') {
-        document.cookie = 'has_session=1; path=/; max-age=604800; SameSite=Lax';
+        const secureFlag =
+          typeof window !== 'undefined' && window.location.protocol === 'https:'
+            ? '; Secure'
+            : '';
+        document.cookie = `has_session=1; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
       }
     },
     clearSession: (state) => {
@@ -51,7 +55,11 @@ export const authSlice = createSlice({
       state.user = null;
       state.isInitializing = false;
       if (typeof document !== 'undefined') {
-        document.cookie = 'has_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+        const secureFlag =
+          typeof window !== 'undefined' && window.location.protocol === 'https:'
+            ? '; Secure'
+            : '';
+        document.cookie = `has_session=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax${secureFlag}`;
       }
     },
     setInitializing: (state, action: PayloadAction<boolean>) => {

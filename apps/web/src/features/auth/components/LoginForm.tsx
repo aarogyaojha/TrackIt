@@ -61,7 +61,11 @@ export function LoginForm() {
     login(data, {
       onSuccess: (res) => {
         if (typeof document !== 'undefined') {
-          document.cookie = 'has_session=1; path=/; max-age=604800; SameSite=Lax';
+          const secureFlag =
+            typeof window !== 'undefined' && window.location.protocol === 'https:'
+              ? '; Secure'
+              : '';
+          document.cookie = `has_session=1; path=/; max-age=604800; SameSite=Lax${secureFlag}`;
         }
         if (res.user?.role === Role.SUPERADMIN) {
           router.push(ROUTES.SUPERADMIN);

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Role } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { useRoles } from '@/features/roles/api/useRoles';
 import { useCreateTeamMember } from '../api/useCreateTeamMember';
 import { TEAM_COPY } from '../team.constants';
@@ -44,10 +44,15 @@ function AddTeamMemberInner({ onSuccess, onCancel }: AddTeamMemberInnerProps) {
   const { data: roles } = useRoles();
   const { mutate: createMember, isPending } = useCreateTeamMember();
 
-  // Filter out platform superadmin from organization assignment options
+  // Filter out platform superadmin and wildcard roles from organization assignment options
   const assignableRoles = React.useMemo(() => {
     if (!roles) return [];
-    return roles.filter((r) => r.key !== Role.SUPERADMIN && r.key !== 'SUPERADMIN');
+    return roles.filter(
+      (r) =>
+        r.key !== Role.SUPERADMIN &&
+        r.key !== 'SUPERADMIN' &&
+        !r.permissions?.includes(Permission.PLATFORM_ALL),
+    );
   }, [roles]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,8 +66,14 @@ function AddTeamMemberInner({ onSuccess, onCancel }: AddTeamMemberInnerProps) {
       toast.error('Email address is required.');
       return;
     }
-    if (password.length < 8) {
-      toast.error('Password must be at least 8 characters.');
+    if (password.length < 8 || password.length > 72) {
+      toast.error('Password must be between 8 and 72 characters.');
+      return;
+    }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
+      toast.error(
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number.',
+      );
       return;
     }
     if (!role) {
@@ -138,6 +149,7 @@ function AddTeamMemberInner({ onSuccess, onCancel }: AddTeamMemberInnerProps) {
           placeholder={TEAM_COPY.ADD_DIALOG.PASSWORD_PLACEHOLDER}
           disabled={isPending}
           minLength={8}
+          maxLength={72}
           required
         />
       </div>

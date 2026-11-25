@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Role, UserResponse } from '@trackit/types';
+import { Permission, Role, UserResponse } from '@trackit/types';
 import { useRoles } from '@/features/roles/api/useRoles';
 import { useUpdateTeamMember } from '../api/useUpdateTeamMember';
 import { TEAM_COPY } from '../team.constants';
@@ -57,7 +57,12 @@ function EditTeamMemberInner({
 
   const assignableRoles = React.useMemo(() => {
     if (!roles) return [];
-    return roles.filter((r) => r.key !== Role.SUPERADMIN && r.key !== 'SUPERADMIN');
+    return roles.filter(
+      (r) =>
+        r.key !== Role.SUPERADMIN &&
+        r.key !== 'SUPERADMIN' &&
+        !r.permissions?.includes(Permission.PLATFORM_ALL),
+    );
   }, [roles]);
 
   const handleSubmit = (e: React.FormEvent) => {
