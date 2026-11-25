@@ -90,6 +90,36 @@ describe('RolesService', () => {
         }),
       );
     });
+
+    it('forbids creating a role with reserved key SUPERADMIN', async () => {
+      await expect(
+        service.createRole({
+          name: 'Fake Superadmin',
+          key: 'superadmin',
+          permissions: [Permission.TICKETS_READ],
+        }),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          status: HttpStatus.FORBIDDEN,
+          code: ErrorCode.FORBIDDEN,
+        }),
+      );
+    });
+
+    it('forbids assigning PLATFORM_ALL permission to a custom role', async () => {
+      await expect(
+        service.createRole({
+          name: 'Escalated Role',
+          key: 'ESCALATED',
+          permissions: [Permission.PLATFORM_ALL],
+        }),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          status: HttpStatus.FORBIDDEN,
+          code: ErrorCode.FORBIDDEN,
+        }),
+      );
+    });
   });
 
   describe('updateRole', () => {

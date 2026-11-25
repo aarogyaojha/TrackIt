@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Length, Matches } from 'class-validator';
 import { OTP_LENGTH, VERIFY_EMAIL_DTO_SWAGGER } from '../auth.constants';
 
 export class VerifyEmailDto {
@@ -18,5 +18,6 @@ export class VerifyEmailDto {
   @IsString()
   @IsNotEmpty()
   @Length(OTP_LENGTH, OTP_LENGTH)
+  @Matches(/^\d+$/, { message: 'Verification code must contain digits only' })
   otp: string;
 }

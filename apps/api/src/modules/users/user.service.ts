@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import * as React from 'react';
 import { ClientSession, Types } from 'mongoose';
-import { Role } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import {
@@ -198,17 +198,49 @@ export class UsersService {
     return this.usersRepository.findByOrganization(organizationId);
   }
 
-  async createStaffUser(
-    organizationId: string,
-    dto: CreateStaffUserDto,
-  ): Promise<UserDocument> {
-    if (dto.role === Role.SUPERADMIN || dto.role === 'SUPERADMIN') {
+  private async resolveAssignableRoleKey(rawRole: string): Promise<string> {
+    const normalizedRole = rawRole.trim().toUpperCase();
+
+    if (normalizedRole === Role.SUPERADMIN) {
       throw new AppException(
         HttpStatus.FORBIDDEN,
         ErrorCode.FORBIDDEN,
         'Cannot assign platform superadmin role to organization staff',
       );
     }
+
+    if (
+      normalizedRole === Role.ORG_ADMIN ||
+      normalizedRole === Role.ORG_STAFF
+    ) {
+      return normalizedRole;
+    }
+
+    const roleDoc = await this.rolesService.getRoleByKey(normalizedRole);
+    if (!roleDoc) {
+      throw new AppException(
+        HttpStatus.BAD_REQUEST,
+        ErrorCode.ROLE_NOT_FOUND,
+        ErrorMessages[ErrorCode.ROLE_NOT_FOUND],
+      );
+    }
+
+    if (roleDoc.permissions?.includes(Permission.PLATFORM_ALL)) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.FORBIDDEN,
+        'Cannot assign platform-level role to organization staff',
+      );
+    }
+
+    return roleDoc.key;
+  }
+
+  async createStaffUser(
+    organizationId: string,
+    dto: CreateStaffUserDto,
+  ): Promise<UserDocument> {
+    const assignableRole = await this.resolveAssignableRoleKey(dto.role);
 
     const existingUser = await this.usersRepository.findByEmailWithPassword(dto.email);
     if (existingUser) {
@@ -217,18 +249,6 @@ export class UsersService {
         ErrorCode.CONFLICT,
         'A user with this email address already exists',
       );
-    }
-
-    // Validate role exists
-    if (dto.role !== Role.ORG_ADMIN && dto.role !== Role.ORG_STAFF) {
-      const roleDoc = await this.rolesService.getRoleByKey(dto.role);
-      if (!roleDoc) {
-        throw new AppException(
-          HttpStatus.BAD_REQUEST,
-          ErrorCode.ROLE_NOT_FOUND,
-          ErrorMessages[ErrorCode.ROLE_NOT_FOUND],
-        );
-      }
     }
 
     // Check plan limits
@@ -242,10 +262,10 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
     return this.usersRepository.create({
-      email: dto.email.toLowerCase(),
+      email: dto.email.trim().toLowerCase(),
       passwordHash,
       name: dto.name.trim(),
-      role: dto.role,
+      role: assignableRole,
       organizationId: new Types.ObjectId(organizationId),
       isActive: true,
       emailVerified: true,
@@ -267,24 +287,10 @@ export class UsersService {
       );
     }
 
-    if (dto.role && (dto.role === Role.SUPERADMIN || dto.role === 'SUPERADMIN')) {
-      throw new AppException(
-        HttpStatus.FORBIDDEN,
-        ErrorCode.FORBIDDEN,
-        'Cannot assign platform superadmin role to organization staff',
-      );
-    }
-
-    if (dto.role && dto.role !== Role.ORG_ADMIN && dto.role !== Role.ORG_STAFF) {
-      const roleDoc = await this.rolesService.getRoleByKey(dto.role);
-      if (!roleDoc) {
-        throw new AppException(
-          HttpStatus.BAD_REQUEST,
-          ErrorCode.ROLE_NOT_FOUND,
-          ErrorMessages[ErrorCode.ROLE_NOT_FOUND],
-        );
-      }
-    }
+    const assignableRole =
+      dto.role !== undefined
+        ? await this.resolveAssignableRoleKey(dto.role)
+        : undefined;
 
     // Prevent deactivating own account
     if (dto.isActive === false && userId === requestingUserId) {
@@ -298,7 +304,8 @@ export class UsersService {
     // If changing role away from ORG_ADMIN or deactivating, verify there's another active admin
     if (
       user.role === Role.ORG_ADMIN &&
-      ((dto.role && dto.role !== Role.ORG_ADMIN) || dto.isActive === false)
+      ((assignableRole && assignableRole !== Role.ORG_ADMIN) ||
+        dto.isActive === false)
     ) {
       const adminCount = await this.usersRepository.countAdminsInOrg(organizationId);
       if (adminCount <= 1) {
@@ -314,11 +321,19 @@ export class UsersService {
     if (dto.name !== undefined) {
       updatePayload.name = dto.name.trim();
     }
-    if (dto.role !== undefined) {
-      updatePayload.role = dto.role;
+    if (assignableRole !== undefined) {
+      updatePayload.role = assignableRole;
+      if (assignableRole !== user.role) {
+        // Revoke refresh token when role privileges change
+        updatePayload.refreshTokenHash = null;
+      }
     }
     if (dto.isActive !== undefined) {
       updatePayload.isActive = dto.isActive;
+      if (dto.isActive === false) {
+        // Revoke refresh token immediately on deactivation
+        updatePayload.refreshTokenHash = null;
+      }
     }
 
     const updated = await this.usersRepository.updateById(userId, {

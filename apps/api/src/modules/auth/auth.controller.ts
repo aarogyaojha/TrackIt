@@ -23,6 +23,7 @@ import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.d
 import {
   AUTH_THROTTLE_LIMIT,
   AUTH_THROTTLE_TTL_MS,
+  OTP_RESEND_THROTTLE_LIMIT,
 } from '../../common/throttle/throttle.constants';
 import { AppConfigService } from '../../config/app-config.service';
 import { ErrorCode, API_PREFIX } from '../../constants';
@@ -45,11 +46,13 @@ export class AuthController {
 
   private setRefreshTokenCookie(res: Response, refreshToken: string): void {
     const isProd = this.appConfigService.isProduction;
+    const maxAgeMs = 7 * 24 * 60 * 60 * 1000; // 7 days matching JWT refresh token lifetime
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? 'none' : 'lax',
       path: `/${API_PREFIX}/auth`,
+      maxAge: maxAgeMs,
       partitioned: isProd,
     });
   }
@@ -220,7 +223,7 @@ export class AuthController {
   @Public()
   @Throttle({
     auth: {
-      limit: AUTH_THROTTLE_LIMIT,
+      limit: OTP_RESEND_THROTTLE_LIMIT,
       ttl: AUTH_THROTTLE_TTL_MS,
     },
   })

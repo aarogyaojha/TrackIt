@@ -4,7 +4,7 @@ import {
   Logger,
   OnModuleInit,
 } from '@nestjs/common';
-import { Permission } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { AppException } from '../../common/exceptions/app.exception';
 import { ErrorCode, ErrorMessages } from '../../constants';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -63,8 +63,36 @@ export class RolesService implements OnModuleInit {
     return this.rolesRepository.findByKey(key);
   }
 
+  private assertAssignablePermissions(
+    roleKey: string,
+    permissions?: Permission[],
+  ): void {
+    if (!permissions) return;
+
+    if (
+      roleKey !== Role.SUPERADMIN &&
+      permissions.includes(Permission.PLATFORM_ALL)
+    ) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.FORBIDDEN,
+        'Cannot assign wildcard platform permission to non-superadmin roles',
+      );
+    }
+  }
+
   async createRole(dto: CreateRoleDto): Promise<RoleDocument> {
     const key = dto.key.toUpperCase().trim();
+    if (key === Role.SUPERADMIN) {
+      throw new AppException(
+        HttpStatus.FORBIDDEN,
+        ErrorCode.FORBIDDEN,
+        'Cannot create a role with reserved key SUPERADMIN',
+      );
+    }
+
+    this.assertAssignablePermissions(key, dto.permissions);
+
     const existing = await this.rolesRepository.findByKey(key);
     if (existing) {
       throw new AppException(
@@ -85,6 +113,8 @@ export class RolesService implements OnModuleInit {
 
   async updateRole(id: string, dto: UpdateRoleDto): Promise<RoleDocument> {
     const role = await this.getRoleById(id);
+
+    this.assertAssignablePermissions(role.key, dto.permissions);
 
     if (role.isSystem) {
       // System roles can have permissions customized by superadmin, but name and key cannot be overwritten

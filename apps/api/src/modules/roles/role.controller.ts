@@ -16,10 +16,12 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { Permission } from '@trackit/types';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import { ParseObjectIdPipe } from '../../common/pipes/parse-object-id.pipe';
 import { ErrorCode } from '../../constants';
 import { SWAGGER_DEFAULTS } from '../../constants/swagger.constants';
+import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { SuperAdminOnly } from '../auth/decorators/super-admin-only.decorator';
 import { UsersRepository } from '../users/user.repository';
 import { CreateRoleDto } from './dto/create-role.dto';
@@ -37,6 +39,7 @@ export class RolesController {
   ) {}
 
   @Get()
+  @RequirePermissions(Permission.ROLES_READ)
   @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
   @ApiOperation({
     summary: ROLES_SWAGGER.LIST_SUMMARY,
@@ -45,13 +48,14 @@ export class RolesController {
   @ApiOkResponse({
     description: ROLES_SWAGGER.LIST_OK_DESCRIPTION,
   })
-  @ApiStandardErrors(ErrorCode.UNAUTHORIZED)
+  @ApiStandardErrors(ErrorCode.UNAUTHORIZED, ErrorCode.FORBIDDEN)
   async listRoles() {
     const roles = await this.rolesService.listRoles();
     return roles.map(toRoleResponse);
   }
 
   @Get(':id')
+  @RequirePermissions(Permission.ROLES_READ)
   @ApiBearerAuth(SWAGGER_DEFAULTS.AUTH_BEARER_NAME)
   @ApiOperation({
     summary: ROLES_SWAGGER.GET_BY_ID_SUMMARY,
@@ -63,6 +67,7 @@ export class RolesController {
   @ApiStandardErrors(
     ErrorCode.VALIDATION_ERROR,
     ErrorCode.UNAUTHORIZED,
+    ErrorCode.FORBIDDEN,
     ErrorCode.NOT_FOUND,
   )
   async getRoleById(@Param('id', ParseObjectIdPipe) id: string) {

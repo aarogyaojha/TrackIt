@@ -140,6 +140,34 @@ describe('Roles & Permissions Module (e2e)', () => {
       expect(keys).toContain('ORG_ADMIN');
       expect(keys).toContain('ORG_STAFF');
     });
+
+    it('should forbid ORG_STAFF without ROLES_READ permission from listing roles', async () => {
+      await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/users`)
+        .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+        .send({
+          name: 'Staff Reader Check',
+          email: 'staffcheck@roletest.com',
+          password: 'Password123!',
+          role: Role.ORG_STAFF,
+        })
+        .expect(201);
+
+      const staffLogin = await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/auth/login`)
+        .send({
+          email: 'staffcheck@roletest.com',
+          password: 'Password123!',
+        })
+        .expect(200);
+
+      const res = await request(app.getHttpServer())
+        .get(`/${API_PREFIX}/roles`)
+        .set('Authorization', `Bearer ${staffLogin.body.data.accessToken}`)
+        .expect(403);
+
+      expect(res.body.error.code).toBe(ErrorCode.FORBIDDEN);
+    });
   });
 
   describe('POST /roles', () => {
@@ -152,6 +180,20 @@ describe('Roles & Permissions Module (e2e)', () => {
           key: 'JUNIOR_MECHANIC',
           description: 'Basic ticket reader',
           permissions: [Permission.TICKETS_READ],
+        })
+        .expect(403);
+
+      expect(res.body.error.code).toBe(ErrorCode.FORBIDDEN);
+    });
+
+    it('should forbid superadmin from creating a custom role with PLATFORM_ALL', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/roles`)
+        .set('Authorization', `Bearer ${superadminAccessToken}`)
+        .send({
+          name: 'Wildcard Role',
+          key: 'WILDCARD_ROLE',
+          permissions: [Permission.PLATFORM_ALL],
         })
         .expect(403);
 

@@ -47,8 +47,11 @@ export class PermissionsGuard implements CanActivate {
       user.role,
     );
 
-    // If role has wildcard permission, allow
-    if (userPermissions.includes(Permission.PLATFORM_ALL)) {
+    // Only platform SUPERADMIN may hold wildcard permission bypass
+    if (
+      (user.role === Role.SUPERADMIN || user.role === 'SUPERADMIN') &&
+      userPermissions.includes(Permission.PLATFORM_ALL)
+    ) {
       return true;
     }
 

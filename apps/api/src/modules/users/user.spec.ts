@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { Types } from 'mongoose';
-import { Role } from '@trackit/types';
+import { Permission, Role } from '@trackit/types';
 import { ErrorCode } from '../../constants';
 import { OTP_MAX_ATTEMPTS } from '../auth/auth.constants';
 import { EmailService } from '../email/email.service';
@@ -395,14 +395,34 @@ describe('UsersService', () => {
   });
 
   describe('createStaffUser', () => {
-    it('should forbid assigning SUPERADMIN role', async () => {
+    it('should forbid assigning SUPERADMIN role (case-insensitive)', async () => {
       const orgId = new Types.ObjectId().toString();
       await expect(
         service.createStaffUser(orgId, {
           email: 'test@example.com',
           name: 'Super',
-          password: 'password123',
-          role: Role.SUPERADMIN,
+          password: 'Password123!',
+          role: 'superadmin',
+        }),
+      ).rejects.toMatchObject({
+        status: HttpStatus.FORBIDDEN,
+        code: ErrorCode.FORBIDDEN,
+      });
+    });
+
+    it('should forbid assigning a custom role that holds PLATFORM_ALL permission', async () => {
+      const orgId = new Types.ObjectId().toString();
+      rolesService.getRoleByKey.mockResolvedValue({
+        key: 'CUSTOM_PLATFORM',
+        permissions: [Permission.PLATFORM_ALL],
+      } as never);
+
+      await expect(
+        service.createStaffUser(orgId, {
+          email: 'test@example.com',
+          name: 'Escalated',
+          password: 'Password123!',
+          role: 'CUSTOM_PLATFORM',
         }),
       ).rejects.toMatchObject({
         status: HttpStatus.FORBIDDEN,
@@ -532,6 +552,32 @@ describe('UsersService', () => {
       ).rejects.toMatchObject({
         status: HttpStatus.BAD_REQUEST,
         code: ErrorCode.CANNOT_REMOVE_LAST_ADMIN,
+      });
+    });
+
+    it('should revoke refreshTokenHash when deactivating a staff user', async () => {
+      const orgId = new Types.ObjectId().toString();
+      const userId = new Types.ObjectId().toString();
+      repository.findById.mockResolvedValue({
+        _id: new Types.ObjectId(userId),
+        organizationId: new Types.ObjectId(orgId),
+        role: Role.ORG_STAFF,
+        isActive: true,
+      } as unknown as UserDocument);
+      repository.updateById.mockResolvedValue({
+        _id: new Types.ObjectId(userId),
+        isActive: false,
+      } as unknown as UserDocument);
+
+      await service.updateStaffUser(orgId, userId, 'admin-id', {
+        isActive: false,
+      });
+
+      expect(repository.updateById).toHaveBeenCalledWith(userId, {
+        $set: {
+          isActive: false,
+          refreshTokenHash: null,
+        },
       });
     });
   });

@@ -150,7 +150,7 @@ describe('Users & Team Management Module (e2e)', () => {
   });
 
   describe('POST /users', () => {
-    it('should forbid assigning SUPERADMIN role to tenant staff', async () => {
+    it('should forbid assigning SUPERADMIN role (case-insensitive) to tenant staff', async () => {
       const res = await request(app.getHttpServer())
         .post(`/${API_PREFIX}/users`)
         .set('Authorization', `Bearer ${orgAdminAccessToken}`)
@@ -158,11 +158,26 @@ describe('Users & Team Management Module (e2e)', () => {
           name: 'Hacker Staff',
           email: 'hacker@teamtest.com',
           password: 'Password123!',
-          role: Role.SUPERADMIN,
+          role: 'superadmin',
         })
         .expect(403);
 
       expect(res.body.error.code).toBe(ErrorCode.FORBIDDEN);
+    });
+
+    it('should reject creating staff user with weak password', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/users`)
+        .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+        .send({
+          name: 'Weak Pass Staff',
+          email: 'weak@teamtest.com',
+          password: 'weakpassword',
+          role: Role.ORG_STAFF,
+        })
+        .expect(400);
+
+      expect(res.body.error.code).toBe(ErrorCode.VALIDATION_ERROR);
     });
 
     it('should create new staff member in organization', async () => {
@@ -251,6 +266,45 @@ describe('Users & Team Management Module (e2e)', () => {
         .expect(400);
 
       expect(res.body.error.code).toBe(ErrorCode.CANNOT_DELETE_SELF);
+    });
+
+    it('should immediately reject existing access token after staff user is deactivated', async () => {
+      // Create and log in a temporary staff member
+      const createRes = await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/users`)
+        .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+        .send({
+          name: 'Temp Staff',
+          email: 'temp@teamtest.com',
+          password: 'Password123!',
+          role: Role.ORG_STAFF,
+        })
+        .expect(201);
+
+      const tempId = createRes.body.data.id;
+
+      const loginRes = await request(app.getHttpServer())
+        .post(`/${API_PREFIX}/auth/login`)
+        .send({
+          email: 'temp@teamtest.com',
+          password: 'Password123!',
+        })
+        .expect(200);
+
+      const tempToken = loginRes.body.data.accessToken;
+
+      // Deactivate staff member
+      await request(app.getHttpServer())
+        .patch(`/${API_PREFIX}/users/${tempId}`)
+        .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+        .send({ isActive: false })
+        .expect(200);
+
+      // Existing access token must be rejected immediately
+      await request(app.getHttpServer())
+        .get(`/${API_PREFIX}/tickets`)
+        .set('Authorization', `Bearer ${tempToken}`)
+        .expect(401);
     });
 
     it('should successfully remove staff member', async () => {
