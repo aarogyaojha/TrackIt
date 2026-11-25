@@ -164,15 +164,15 @@ export class OrganizationsService {
             throw err;
           }
 
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : ErrorMessages[ErrorCode.INTERNAL_ERROR];
+          this.logger.error(
+            `Organization registration failed: ${err instanceof Error ? err.message : String(err)}`,
+            err instanceof Error ? err.stack : undefined,
+          );
 
           throw new AppException(
             HttpStatus.INTERNAL_SERVER_ERROR,
             ErrorCode.INTERNAL_ERROR,
-            errorMessage,
+            ErrorMessages[ErrorCode.INTERNAL_ERROR],
           );
         } finally {
           await session.endSession();

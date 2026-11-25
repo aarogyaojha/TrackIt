@@ -51,7 +51,6 @@ export class EmailService {
           HttpStatus.INTERNAL_SERVER_ERROR,
           ErrorCode.EMAIL_SEND_FAILED,
           ErrorMessages[ErrorCode.EMAIL_SEND_FAILED],
-          response.error,
         );
       }
     } catch (error) {
@@ -67,7 +66,6 @@ export class EmailService {
         HttpStatus.INTERNAL_SERVER_ERROR,
         ErrorCode.EMAIL_SEND_FAILED,
         ErrorMessages[ErrorCode.EMAIL_SEND_FAILED],
-        error,
       );
     }
   }

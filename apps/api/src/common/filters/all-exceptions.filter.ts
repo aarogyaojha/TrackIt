@@ -55,16 +55,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
         code = this.mapHttpStatusToErrorCode(status);
       }
     } else if (exception instanceof Error) {
-      message = exception.message || ErrorMessages[ErrorCode.INTERNAL_ERROR];
+      // Never leak raw internal Error messages (e.g. Mongoose/driver errors) to API clients.
+      message = ErrorMessages[ErrorCode.INTERNAL_ERROR];
     }
+
+    const logMessage =
+      status >= 500 && exception instanceof Error
+        ? exception.message || message
+        : message;
 
     if (status >= 500) {
       this.logger.error(
-        `[${status}] ${code}: ${message}`,
+        `[${status}] ${code}: ${logMessage}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     } else {
-      this.logger.warn(`[${status}] ${code}: ${message}`);
+      this.logger.warn(`[${status}] ${code}: ${logMessage}`);
     }
 
     const errorPayload: {
