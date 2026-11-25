@@ -645,6 +645,24 @@ describe('Tickets Module (e2e)', () => {
       .expect(404);
 
     expect(notFoundRes.body.success).toBe(false);
+
+    // Reject NoSQL operator object injection cleanly with 400 VALIDATION_ERROR
+    const injectionRes = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/public/${orgSlug}/lookup?query[$ne]=1`)
+      .expect(400);
+
+    expect(injectionRes.body.success).toBe(false);
+    expect(injectionRes.body.error.code).toBe(ErrorCode.VALIDATION_ERROR);
+  });
+
+  it(`GET /${API_PREFIX}/tickets?search=(a+)+ — handles regex metacharacters safely without 500 error`, async () => {
+    const res = await request(app.getHttpServer())
+      .get(`/${API_PREFIX}/tickets?search=${encodeURIComponent('(a+)+[')}`)
+      .set('Authorization', `Bearer ${orgAdminAccessToken}`)
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
   });
 
   it(`GET /${API_PREFIX}/public/:orgSlug/tickets/:code — returns 404 NOT_FOUND when organization is SUSPENDED`, async () => {

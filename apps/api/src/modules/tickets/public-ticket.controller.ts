@@ -3,11 +3,13 @@ import { ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestj
 import { Throttle } from '@nestjs/throttler';
 import { ApiStandardErrors } from '../../common/decorators/api-standard-errors.decorator';
 import {
+  PUBLIC_INTAKE_THROTTLE_LIMIT,
   PUBLIC_THROTTLE_LIMIT,
   PUBLIC_THROTTLE_TTL_MS,
 } from '../../common/throttle/throttle.constants';
 import { ErrorCode } from '../../constants';
 import { Public } from '../auth/decorators/public.decorator';
+import { LookupPublicQueryDto } from './dto/lookup-public-query.dto';
 import { PublicCreateTicketDto } from './dto/public-create-ticket.dto';
 import { TICKETS_SWAGGER } from './ticket.constants';
 import { toPublicTicketResponse } from './ticket.response';
@@ -52,12 +54,15 @@ export class PublicTicketsController {
   @ApiOkResponse({
     description: TICKETS_SWAGGER.LOOKUP_PUBLIC_OK_DESCRIPTION,
   })
-  @ApiStandardErrors(ErrorCode.NOT_FOUND)
+  @ApiStandardErrors(ErrorCode.VALIDATION_ERROR, ErrorCode.NOT_FOUND)
   async lookupPublic(
     @Param('orgSlug') orgSlug: string,
-    @Query('query') query: string,
+    @Query() queryDto: LookupPublicQueryDto,
   ) {
-    const { tickets } = await this.ticketsService.lookupPublic(orgSlug, query);
+    const { tickets } = await this.ticketsService.lookupPublic(
+      orgSlug,
+      queryDto.query,
+    );
     return tickets.map((t) =>
       toPublicTicketResponse(t.ticket, t.orgName, t.workflow),
     );
@@ -86,7 +91,7 @@ export class PublicTicketsController {
   @HttpCode(HttpStatus.CREATED)
   @Throttle({
     public: {
-      limit: PUBLIC_THROTTLE_LIMIT,
+      limit: PUBLIC_INTAKE_THROTTLE_LIMIT,
       ttl: PUBLIC_THROTTLE_TTL_MS,
     },
   })

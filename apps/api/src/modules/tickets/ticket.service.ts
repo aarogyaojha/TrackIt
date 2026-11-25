@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { QueryFilter, Types } from 'mongoose';
 import {
@@ -160,7 +161,10 @@ export class TicketsService {
     }
 
     if (query.search?.trim()) {
-      const searchRegex = new RegExp(query.search.trim(), 'i');
+      const escapedSearch = query.search
+        .trim()
+        .replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const searchRegex = new RegExp(escapedSearch, 'i');
       filter.$or = [
         { code: searchRegex },
         { customerName: searchRegex },
@@ -560,7 +564,7 @@ export class TicketsService {
     for (let attempt = 0; attempt < 5; attempt++) {
       let rand = '';
       for (let i = 0; i < 6; i++) {
-        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+        rand += chars.charAt(crypto.randomInt(0, chars.length));
       }
       const candidateCode = `TK-${rand}`;
 
@@ -600,7 +604,7 @@ export class TicketsService {
     }
 
     if (!ticket) {
-      const fallbackCode = `TK-${Date.now().toString(36).toUpperCase()}`;
+      const fallbackCode = `TK-${crypto.randomBytes(5).toString('hex').toUpperCase()}`;
       ticket = await this.ticketsRepository.create({
         organizationId: orgObjectId,
         workflowId: workflow?._id,

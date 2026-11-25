@@ -334,6 +334,26 @@ describe('TicketsService', () => {
         { createdAt: -1 },
       );
     });
+
+    it('escapes regex metacharacters in search query to prevent ReDoS/SyntaxError', async () => {
+      ticketsRepository.findPaginated.mockResolvedValue({
+        items: [],
+        total: 0,
+      });
+
+      const query: ListTicketsQueryDto = {
+        page: 1,
+        limit: 10,
+        search: '(a+)+ [invalid',
+      };
+
+      await service.listByOrg(mockOrgId, query);
+
+      const filterArg = ticketsRepository.findPaginated.mock.calls[0][0] as {
+        $or: Array<{ code: RegExp; customerName?: RegExp }>;
+      };
+      expect(filterArg.$or[0].code.source).toBe('\\(a\\+\\)\\+ \\[invalid');
+    });
   });
 
   describe('getByIdScoped', () => {

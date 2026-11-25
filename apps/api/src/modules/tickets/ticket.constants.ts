@@ -97,6 +97,7 @@ export const TICKETS_DTO_SWAGGER = {
   STATUS_DESCRIPTION: 'Current status of the ticket',
   STATUS_EXAMPLE: TicketStatus.IN_PROGRESS,
   SEARCH_QUERY_DESCRIPTION: 'Search tickets by code or customer name',
+  LOOKUP_QUERY_DESCRIPTION: 'Ticket code or customer phone number to look up',
   STATUS_QUERY_DESCRIPTION: 'Filter tickets by status',
   WORKFLOW_ID_DESCRIPTION:
     'Optional ID of the workflow defining the status lifecycle for this ticket',

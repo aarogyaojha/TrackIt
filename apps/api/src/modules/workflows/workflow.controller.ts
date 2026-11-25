@@ -28,6 +28,7 @@ import { CurrentOrg } from '../auth/decorators/current-org.decorator';
 import { RequirePermissions } from '../auth/decorators/permissions.decorator';
 import { TenantGuard } from '../auth/guards/tenant.guard';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
+import { ListWorkflowsQueryDto } from './dto/list-workflows-query.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { WORKFLOWS_SWAGGER } from './workflow.constants';
 import {
@@ -90,9 +91,9 @@ export class WorkflowsController {
   )
   async list(
     @CurrentOrg() orgId: string,
-    @Query('activeOnly') activeOnly?: string,
+    @Query() query: ListWorkflowsQueryDto,
   ): Promise<WorkflowSummaryResponse[]> {
-    const isActiveOnly = activeOnly === 'true';
+    const isActiveOnly = query.activeOnly === 'true';
     const workflows = await this.workflowsService.listByOrg(orgId, isActiveOnly);
     return workflows.map(toWorkflowSummaryResponse);
   }

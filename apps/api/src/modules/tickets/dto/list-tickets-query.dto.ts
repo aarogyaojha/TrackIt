@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsMongoId, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto';
 import { TICKETS_DTO_SWAGGER } from '../ticket.constants';
 
@@ -9,6 +9,7 @@ export class ListTicketsQueryDto extends PaginationQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(64)
   status?: string;
 
   @ApiPropertyOptional({
@@ -23,6 +24,7 @@ export class ListTicketsQueryDto extends PaginationQueryDto {
   })
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   search?: string;
 }
 

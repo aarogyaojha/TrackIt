@@ -98,6 +98,7 @@ export class TicketsRepository extends BaseRepository<TicketDocument> {
         organizationId: orgObjectId,
         customerPhone: phone.trim(),
       },
+      undefined,
       { sort: { createdAt: -1 }, limit: 10 },
     );
   }
@@ -250,6 +251,7 @@ export class TicketsRepository extends BaseRepository<TicketDocument> {
       ]),
       this.find(
         { organizationId: orgObjectId },
+        undefined,
         { sort: { updatedAt: -1 }, limit: 5 },
       ),
     ]);
